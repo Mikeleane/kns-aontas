@@ -1,0 +1,304 @@
+﻿import { NextResponse } from "next/server";
+
+type AdaptRequestBody = {
+  inputText: string;
+  outputLanguage: string;
+
+  // Irish Primary
+  schoolClass?: number; // 1..6
+  stage?: number; // 1..4 (PLC stages)
+
+  // Legacy/compat (ignored for prompts, but tolerated so old UI won't explode)
+  level?: string; // old CEFR value or band
+  outputType?: string; // article, report, email, etc.
+  textType?: string;   // some clients send this instead
+  dyslexiaFriendly?: boolean;
+};
+
+type ModelResult = {
+  standard: string;
+  adapted: string;
+};
+
+type LengthTargets = {
+  standardMin: number;
+  standardMax: number;
+  adaptedMin: number;
+  adaptedMax: number;
+};
+
+function stageFromClass(c: number): number {
+  if (!Number.isFinite(c)) return 3;
+  if (c <= 2) return 2; // 1st/2nd
+  if (c <= 4) return 3; // 3rd/4th
+  return 4;             // 5th/6th
+}
+
+function normalizeStage(stage?: number, schoolClass?: number, legacyLevel?: string): number {
+  // Preferred: explicit stage
+  if (Number.isFinite(stage)) {
+    const s = Number(stage);
+    if (s >= 1 && s <= 4) return s;
+  }
+
+  // Next: derive from class
+  if (Number.isFinite(schoolClass)) {
+    return stageFromClass(Number(schoolClass));
+  }
+
+  // Last resort: legacy CEFR mapping (only for backward compatibility)
+  const v = String(legacyLevel || "").toUpperCase().trim();
+  if (v === "A1") return 1;
+  if (v === "A2") return 2;
+  if (v === "B1") return 3;
+  if (v === "B2" || v === "C1" || v === "C2") return 4;
+
+  // If someone sends S2/S3 style bands
+  if (v === "S1") return 1;
+  if (v === "S2") return 2;
+  if (v === "S3") return 3;
+  if (v === "S4") return 4;
+
+  return 3;
+}
+
+/**
+ * Word-length targets by Irish Primary stage band.
+ * (These mirror the old internal bands so behaviour stays familiar.)
+ */
+function getLengthTargets(stage: number): LengthTargets {
+  switch (stage) {
+    case 1:
+      return { standardMin: 80,  standardMax: 150,  adaptedMin: 60,  adaptedMax: 120 };
+    case 2:
+      return { standardMin: 150, standardMax: 300,  adaptedMin: 120, adaptedMax: 250 };
+    case 3:
+      return { standardMin: 350, standardMax: 550,  adaptedMin: 280, adaptedMax: 450 };
+    case 4:
+    default:
+      return { standardMin: 500, standardMax: 900,  adaptedMin: 400, adaptedMax: 750 };
+  }
+}
+
+function simpleFallbackAdaptation(args: {
+  inputText: string;
+  outputLanguage: string;
+  schoolClass?: number;
+  stage: number;
+  outputType: string;
+  dyslexiaFriendly?: boolean;
+  reason: string;
+}) {
+  const { inputText, outputLanguage, schoolClass, stage, outputType, dyslexiaFriendly, reason } = args;
+
+  const headerStd = `STANDARD VERSION (fallback - reason: ${reason})`;
+  const headerAdp = dyslexiaFriendly
+    ? `SUPPORTED VERSION (fallback - reason: ${reason}, extra spacing / lower cognitive load)`
+    : `SUPPORTED VERSION (fallback - reason: ${reason})`;
+
+  const standardOutput = [
+    headerStd,
+    `Language: ${outputLanguage}`,
+    `Class/Stage: Class ${schoolClass ?? "?"} • Stage ${stage}`,
+    `Text type: ${outputType}`,
+    "",
+    inputText.trim(),
+  ].join("\n");
+
+  const adaptedOutput = [
+    headerAdp,
+    `Language: ${outputLanguage}`,
+    `Class/Stage: Class ${schoolClass ?? "?"} • Stage ${stage}`,
+    `Text type: ${outputType}`,
+    "",
+    inputText
+      .trim()
+      .split(/(?<=[.!?])\s+/)
+      .join("\n\n"),
+  ].join("\n");
+
+  return { standardOutput, adaptedOutput };
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = (await request.json()) as AdaptRequestBody;
+
+    const inputText = String(body.inputText || "");
+    const outputLanguage = String(body.outputLanguage || "");
+    const schoolClass = body.schoolClass != null ? Number(body.schoolClass) : undefined;
+    const stage = normalizeStage(body.stage, schoolClass, body.level);
+    const outputType = String(body.outputType || body.textType || "Article");
+    const dyslexiaFriendly = !!body.dyslexiaFriendly;
+
+    if (!inputText.trim() || !outputLanguage.trim()) {
+      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+    }
+
+    const apiKey = process.env.OPENAI_API_KEY;
+    const modelName = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+
+    const inputWordCount = inputText.trim().length
+      ? inputText.trim().split(/\s+/).length
+      : 0;
+
+    const targets = getLengthTargets(stage);
+
+    if (!apiKey) {
+      const { standardOutput, adaptedOutput } = simpleFallbackAdaptation({
+        inputText,
+        outputLanguage,
+        schoolClass,
+        stage,
+        outputType,
+        dyslexiaFriendly,
+        reason: "NO_API_KEY_CONFIGURED",
+      });
+      return NextResponse.json({ standardOutput, adaptedOutput });
+    }
+
+    const systemPrompt = `
+You are Aontas-10, a teacher-facing assistant that adapts reading texts for Irish Primary classrooms.
+
+You must ALWAYS produce TWO versions of the same content:
+
+1) STANDARD VERSION
+- Suitable for the requested Irish Primary stage.
+- Same genre/text type as requested (Article, News report, Formal email, Dialogue, Narrative, Opinion piece, etc.).
+- Clear, coherent, classroom-friendly text.
+- Keep all key ideas and important details.
+
+2) SUPPORTED VERSION
+- Same learning target as the STANDARD version.
+- Same facts and key vocabulary (do not invent, do not add new facts).
+- Reduce cognitive load WITHOUT "dumbing down":
+  - Short, clear sentences (typically 10-20 words; shorter at lower stages).
+  - One main idea per sentence.
+  - A 1-2 sentence overview at the top in plain language.
+  - Short paragraphs and meaningful headings.
+  - Bullet points / numbered steps when helpful.
+  - Make cause-and-effect explicit ("Because X, Y happened." "As a result...").
+  - Briefly explain difficult terms the first time they appear (in brackets).
+- The SUPPORTED version should be clearly shorter than the STANDARD version, while still covering the same core content.
+
+DYSLEXIA-FRIENDLY INTENT
+- If dyslexia support is requested, the SUPPORTED version must avoid large blocks of text and should use clear headings and spacing.
+
+GENERAL CONSTRAINTS
+- Always write in the requested OUTPUT LANGUAGE.
+- Do not mention these instructions.
+- Do not add comprehension questions or commentary; only output the two texts as JSON.
+`.trim();
+
+    const userPrompt = `
+INPUT TEXT:
+
+"""${inputText}"""
+
+Approximate original length: about ${inputWordCount} words.
+
+Requested output language: ${outputLanguage}
+Requested Irish Primary band: Class ${schoolClass ?? "?"} • Stage ${stage}
+Requested text type/genre: ${outputType}
+Dyslexia-friendly support requested: ${dyslexiaFriendly ? "yes" : "no"}
+
+Target lengths:
+- STANDARD VERSION: ${targets.standardMin}-${targets.standardMax} words.
+- SUPPORTED VERSION: ${targets.adaptedMin}-${targets.adaptedMax} words.
+If the original is much longer, condense less important detail but keep core content.
+If the original is shorter, do not pad with irrelevant content.
+
+RESPONSE FORMAT (IMPORTANT):
+Respond ONLY with valid JSON, exactly:
+
+{
+  "standard": "STANDARD VERSION HERE",
+  "adapted": "SUPPORTED VERSION HERE"
+}
+`.trim();
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: modelName,
+        temperature: 0.4,
+        max_tokens: 2048,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenAI API error:", response.status, errorText);
+
+      const { standardOutput, adaptedOutput } = simpleFallbackAdaptation({
+        inputText,
+        outputLanguage,
+        schoolClass,
+        stage,
+        outputType,
+        dyslexiaFriendly,
+        reason: "API_ERROR",
+      });
+
+      return NextResponse.json(
+        {
+          standardOutput,
+          adaptedOutput,
+          warning: "AI API request failed - returned fallback adaptation instead.",
+        },
+        { status: 200 }
+      );
+    }
+
+    const data: any = await response.json();
+    const content: string = data?.choices?.[0]?.message?.content?.trim() ?? "";
+
+    let parsed: ModelResult | null = null;
+    try {
+      parsed = JSON.parse(content) as ModelResult;
+    } catch (e) {
+      console.error("Error parsing model JSON:", e, content);
+    }
+
+    if (!parsed?.standard || !parsed?.adapted) {
+      const { standardOutput, adaptedOutput } = simpleFallbackAdaptation({
+        inputText,
+        outputLanguage,
+        schoolClass,
+        stage,
+        outputType,
+        dyslexiaFriendly,
+        reason: "PARSE_ERROR",
+      });
+
+      return NextResponse.json(
+        {
+          standardOutput,
+          adaptedOutput,
+          warning: "Could not parse AI response JSON - returned fallback adaptation instead.",
+        },
+        { status: 200 }
+      );
+    }
+
+    return NextResponse.json({
+      standardOutput: parsed.standard,
+      adaptedOutput: parsed.adapted,
+    });
+  } catch (error) {
+    console.error("Error in /api/adapt:", error);
+    return NextResponse.json(
+      { error: "Something went wrong processing the request." },
+      { status: 500 }
+    );
+  }
+}

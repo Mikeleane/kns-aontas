@@ -1,0 +1,24 @@
+Aontas patch v2 — UI panels + Word Study encoding
+
+Applies to repo root aontas-101-kns.
+
+What it changes:
+1) app/api/exercises/route.ts
+   - Uses OPENAI_MODEL from .env.local (defaults to gpt-4.1-mini)
+   - Dedupes singleton blocks (prevents double Word Study)
+   - Word Study answers use a safe ' - ' separator (removes mojibake)
+   - True/False + Cloze guardrails kept
+
+2) scripts/aontas_fix_ui_panels.ps1
+   - Non-destructive: swaps dark Tailwind tokens to light ones inside:
+     app/_features/reading/ReadingPackApp.tsx and app/page.tsx (if present)
+   - Makes “inside panels” match the new light UI
+
+3) scripts/aontas_scan_mojibake.ps1
+   - Finds remaining mojibake in source files (excluding .next, node_modules)
+
+How to apply:
+- Put this zip in repo root
+- Expand-Archive -Force
+- Run:  .\scripts\aontas_fix_ui_panels.ps1
+- Restart: npm run dev
