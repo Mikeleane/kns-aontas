@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Wordiness — Calm Spell Lab</title>
+<style>
+  :root{--text:#eef2ff;--muted:rgba(238,242,255,.72);--line:rgba(238,242,255,.16);
+  --ok:#22c55e;--no:#ef4444;--acc:#38bdf8;--r:16px;--base:18px;--lh:1.65;--ls:0px;--ws:0px;}
+  body.supported{--base:19px;--lh:1.85;--ls:.2px;--ws:.6px;}
+  body{margin:0;color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+    font-size:var(--base);line-height:var(--lh);letter-spacing:var(--ls);word-spacing:var(--ws);
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(56,189,248,.14), transparent 60%),
+      radial-gradient(900px 500px at 92% 10%, rgba(34,197,94,.12), transparent 55%),
+      linear-gradient(180deg,#050816,#070b16 55%,#050816);}
+  .wrap{max-width:980px;margin:0 auto;padding:16px}
+  header{position:sticky;top:10px;z-index:10;backdrop-filter:blur(10px);
+    border:1px solid var(--line);border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(16,27,51,.85), rgba(11,20,40,.75));
+    padding:12px 14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;}
+  h1{margin:0;font-size:18px}.sub{margin-top:2px;color:var(--muted);font-size:13px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  select,button,input{font:inherit}
+  select{background:rgba(0,0,0,.25);color:var(--text);border:1px solid var(--line);padding:8px 10px;border-radius:12px;outline:none}
+  button{cursor:pointer;border-radius:12px;padding:10px 12px;color:var(--text);
+    border:1px solid rgba(34,197,94,.35);background:linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.08));}
+  button.ghost{border:1px solid var(--line);background:rgba(255,255,255,.04)}
+  .card{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(16,27,51,.75), rgba(11,20,40,.7));overflow:hidden}
+  .hd{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
+  .bd{padding:14px}
+  .big{font-size:24px;font-weight:900;margin:0}
+  .hint{margin:8px 0 0;color:var(--muted);font-size:13px}
+  .field{width:100%;max-width:560px;border-radius:14px;border:1px solid rgba(238,242,255,.16);
+    background:rgba(0,0,0,.14);color:var(--text);padding:14px 14px;font-size:20px;letter-spacing:.8px;outline:none}
+  .boxes{display:none;gap:8px;flex-wrap:wrap;margin-top:12px}
+  body.supported .boxes{display:flex}
+  .box{min-width:58px;min-height:54px;border-radius:14px;border:1px solid rgba(238,242,255,.16);
+    background:rgba(0,0,0,.10);display:flex;align-items:center;justify-content:center;font-weight:900;color:rgba(238,242,255,.85)}
+  .bank{display:none;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px;border:1px dashed rgba(238,242,255,.22);border-radius:14px;background:rgba(0,0,0,.12)}
+  body.supported .bank{display:flex}
+  .letter{min-width:48px;min-height:48px;border-radius:14px;border:1px solid rgba(238,242,255,.16);
+    background:rgba(255,255,255,.05);color:var(--text);font-weight:900;cursor:pointer;user-select:none}
+  .status{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);
+    font-size:13px;color:rgba(238,242,255,.86);display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
+  .ok{color:var(--ok);font-weight:900}.no{color:var(--no);font-weight:900}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Calm Spell Lab</h1>
+    <div class="sub">Hear → spell. Supported adds “chunk boxes” + a letter bank (same answers).</div>
+  </div>
+  <div class="row">
+    <label class="row" style="gap:6px;color:var(--muted);font-size:13px">View
+      <select id="variant"><option value="standard">Standard</option><option value="supported">Supported</option></select>
+    </label>
+    <label class="row" style="gap:6px;color:var(--muted);font-size:13px">Voice <select id="voice"></select></label>
+    <button class="ghost" id="hear">Hear</button>
+    <button class="ghost" id="slow">Slow</button>
+    <button id="next">Next</button>
+  </div>
+</header>
+
+<section class="card">
+  <div class="hd">
+    <div>
+      <div class="sub">Target</div>
+      <p class="big" id="target">—</p>
+      <p class="hint" id="supportHint"></p>
+    </div>
+    <div class="row">
+      <button class="ghost" id="clear">Clear</button>
+      <button id="check">Check</button>
+      <button class="ghost" id="show">Show</button>
+    </div>
+  </div>
+
+  <div class="bd">
+    <div class="sub" style="margin-bottom:8px">Type your spelling (or tap letters in Supported mode):</div>
+    <input id="field" class="field" autocomplete="off" autocapitalize="none" spellcheck="false" />
+    <div class="boxes" id="boxes"></div>
+    <div class="bank" id="bank"></div>
+
+    <div class="status">
+      <span>Status: <b id="status">ready</b></span>
+      <span>Correct (unique): <b id="score">0</b>/<b id="total">0</b></span>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+const WORDS=[
+  {w:"responsibility", chunks:["re","spon","si","bil","i","ty"]},
+  {w:"community",       chunks:["com","mu","ni","ty"]},
+  {w:"different",       chunks:["dif","fer","ent"]},
+  {w:"together",        chunks:["to","ge","ther"]},
+  {w:"knowledge",       chunks:["know","ledge"]},
+  {w:"practice",        chunks:["prac","tice"]},
+  {w:"balance",         chunks:["bal","ance"]},
+  {w:"respectful",      chunks:["re","spect","ful"]},
+];
+
+const $=(s,r=document)=>r.querySelector(s);
+
+/* TTS */
+let voices=[];
+function refreshVoices(){
+  if(!window.speechSynthesis) return;
+  voices=speechSynthesis.getVoices()||[];
+  const sel=$("#voice"); sel.innerHTML="";
+  const o0=document.createElement("option"); o0.value=""; o0.textContent=voices.length?"Default":"No voices"; sel.appendChild(o0);
+  voices.forEach((v,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=`${v.name} (${v.lang})`;sel.appendChild(o);});
+}
+function speak(text,rate=1.0){
+  if(!window.speechSynthesis) return;
+  const u=new SpeechSynthesisUtterance(String(text||""));
+  const idx=parseInt($("#voice").value,10);
+  if(Number.isFinite(idx)&&voices[idx]) u.voice=voices[idx];
+  u.rate=Math.max(0.65,Math.min(1.15,rate));
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+
+const state={variant:"standard", i:0, score:0, seen:new Set()};
+
+function setVariant(v){
+  state.variant=(v==="supported")?"supported":"standard";
+  document.body.classList.toggle("supported", state.variant==="supported");
+  render();
+}
+function cur(){return WORDS[state.i];}
+function setStatus(html){$("#status").innerHTML=html;}
+
+function renderChunks(){
+  const b=$("#boxes"); b.innerHTML="";
+  cur().chunks.forEach(x=>{
+    const d=document.createElement("div"); d.className="box"; d.textContent=x; b.appendChild(d);
+  });
+}
+function renderBank(){
+  const bank=$("#bank"); bank.innerHTML="";
+  const word=cur().w;
+  const letters=[...word];
+  const decoys=[..."aeiourstlnpmdgkbcfhv"].slice(0, Math.min(10, Math.max(4, Math.floor(word.length/2))));
+  const all=[...letters,...decoys].slice(0,24).sort(()=>Math.random()-0.5);
+
+  all.forEach(ch=>{
+    const b=document.createElement("button"); b.type="button"; b.className="letter"; b.textContent=ch;
+    b.addEventListener("click",()=>{ $("#field").value=($("#field").value+ch).slice(0,60); $("#field").focus(); });
+    bank.appendChild(b);
+  });
+
+  const back=document.createElement("button"); back.type="button"; back.className="letter"; back.textContent="⌫";
+  back.addEventListener("click",()=>{ $("#field").value=($("#field").value||"").slice(0,-1); $("#field").focus(); });
+  bank.appendChild(back);
+}
+
+function render(){
+  $("#target").textContent=cur().w;
+  $("#supportHint").textContent=(state.variant==="supported")
+    ? "Support: use chunk boxes as a memory cue. (They are not perfect syllables — they’re helpful chunks.)"
+    : "Tip: hear it twice, then spell it once.";
+  $("#total").textContent=String(WORDS.length);
+  $("#score").textContent=String(state.score);
+  renderChunks();
+  renderBank();
+  $("#field").focus();
+}
+
+function clearInput(){ $("#field").value=""; setStatus("ready"); }
+function check(){
+  const want=cur().w.toLowerCase();
+  const got=($("#field").value||"").trim().toLowerCase();
+  if(!got){ setStatus(`<span class="no">not yet</span> — type something`); return; }
+  if(got===want){
+    setStatus(`<span class="ok">correct ✅</span>`);
+    if(!state.seen.has(state.i)){ state.seen.add(state.i); state.score++; $("#score").textContent=String(state.score); }
+    if(state.variant==="supported") speak("Correct",1.0);
+  } else {
+    setStatus(`<span class="no">not yet</span> — try again (slow audio can help)`);
+  }
+}
+function show(){ $("#field").value=cur().w; setStatus("answer shown"); }
+function next(){ state.i=(state.i+1)%WORDS.length; clearInput(); render(); }
+
+$("#variant").addEventListener("change",(e)=>setVariant(e.target.value));
+$("#hear").addEventListener("click",()=>speak(cur().w,0.98));
+$("#slow").addEventListener("click",()=>speak(cur().w,0.78));
+$("#next").addEventListener("click",next);
+$("#clear").addEventListener("click",clearInput);
+$("#check").addEventListener("click",check);
+$("#show").addEventListener("click",show);
+$("#field").addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+
+refreshVoices(); if(window.speechSynthesis) speechSynthesis.onvoiceschanged=refreshVoices;
+render();
+</script>
+</body>
+</html>

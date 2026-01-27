@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Wordiness — Focus Finder</title>
+<style>
+  :root{--text:#eef2ff;--muted:rgba(238,242,255,.72);--line:rgba(238,242,255,.16);
+  --ok:#22c55e;--no:#ef4444;--acc:#38bdf8;--r:16px;--base:18px;--lh:1.75;--ls:0px;--ws:0px;}
+  body.supported{--base:19px;--lh:1.9;--ls:.2px;--ws:.6px;}
+  body{margin:0;color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+    font-size:var(--base);line-height:var(--lh);letter-spacing:var(--ls);word-spacing:var(--ws);
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(56,189,248,.14), transparent 60%),
+      radial-gradient(900px 500px at 92% 10%, rgba(34,197,94,.12), transparent 55%),
+      linear-gradient(180deg,#050816,#070b16 55%,#050816);}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  header{position:sticky;top:10px;z-index:10;backdrop-filter:blur(10px);
+    border:1px solid var(--line);border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(16,27,51,.85), rgba(11,20,40,.75));
+    padding:12px 14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;}
+  h1{margin:0;font-size:18px}.sub{margin-top:2px;color:var(--muted);font-size:13px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  select,button{font:inherit}
+  select{background:rgba(0,0,0,.25);color:var(--text);border:1px solid var(--line);padding:8px 10px;border-radius:12px;outline:none}
+  button{cursor:pointer;border-radius:12px;padding:10px 12px;color:var(--text);
+    border:1px solid rgba(34,197,94,.35);background:linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.08));}
+  button.ghost{border:1px solid var(--line);background:rgba(255,255,255,.04)}
+  .card{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(16,27,51,.75), rgba(11,20,40,.7));overflow:hidden}
+  .hd{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
+  .bd{padding:14px}
+  .big{font-size:22px;font-weight:900;margin:0}
+  .hint{margin:8px 0 0;color:var(--muted);font-size:13px}
+  .textbox{padding:14px;border:1px dashed rgba(238,242,255,.22);border-radius:14px;background:rgba(0,0,0,.12);text-align:left}
+  .word{display:inline-block;margin:2px 4px;padding:6px 10px;border-radius:999px;border:1px solid rgba(238,242,255,.14);
+    background:rgba(255,255,255,.03);cursor:pointer;user-select:none;font-weight:800}
+  .word.on{border-color:rgba(56,189,248,.55);background:rgba(56,189,248,.10)}
+  .word.correct{border-color:rgba(34,197,94,.55);background:rgba(34,197,94,.10)}
+  .word.wrong{border-color:rgba(239,68,68,.55);background:rgba(239,68,68,.10)}
+  .mini{display:none;margin-left:8px;font-size:12px;padding:2px 7px;border-radius:999px;border:1px solid rgba(238,242,255,.16);
+    background:rgba(0,0,0,.18);color:rgba(238,242,255,.82)}
+  body.supported .word.on .mini{display:inline-block}
+  .status{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);
+    font-size:13px;color:rgba(238,242,255,.86);display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;}
+  .ok{color:var(--ok);font-weight:900}.no{color:var(--no);font-weight:900}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Focus Finder</h1>
+    <div class="sub">Click words that match the pattern. Supported shows “match / not” AFTER you click (same answers).</div>
+  </div>
+  <div class="row">
+    <label class="row" style="gap:6px;color:var(--muted);font-size:13px">View
+      <select id="variant"><option value="standard">Standard</option><option value="supported">Supported</option></select>
+    </label>
+    <label class="row" style="gap:6px;color:var(--muted);font-size:13px">Voice <select id="voice"></select></label>
+    <select id="taskSel"></select>
+    <button class="ghost" id="read">Read text</button>
+    <button class="ghost" id="clear">Clear</button>
+    <button id="check">Check</button>
+  </div>
+</header>
+
+<section class="card">
+  <div class="hd">
+    <div>
+      <div class="sub">Task</div>
+      <p class="big" id="taskTitle">—</p>
+      <p class="hint" id="taskHint"></p>
+    </div>
+    <div class="row">
+      <button class="ghost" id="show">Show answers</button>
+    </div>
+  </div>
+  <div class="bd">
+    <div class="textbox" id="text"></div>
+    <div class="status">
+      <span>Status: <b id="status">ready</b></span>
+      <span>Selected: <b id="sel">0</b> • Correct: <b id="corr">0</b>/<b id="need">0</b></span>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+const TEXT =
+"We had a discussion about responsibility in our community. Sometimes people disagree, but respectful conversation helps everyone. " +
+"If a decision is difficult, we can break the task into smaller steps. We can replay ideas, review notes, and organise our work.";
+
+const TASKS=[
+  {id:"tion", title:"Find words ending in -tion", hint:"Look for t-i-o-n at the end.", match:(w)=>w.toLowerCase().endsWith("tion")},
+  {id:"re",   title:"Find words starting with re-",   hint:"re- often means again.", match:(w)=>w.toLowerCase().startsWith("re")},
+  {id:"dbl",  title:"Find words with double letters", hint:"Two of the same letter together (like ss).", match:(w)=>/([a-z])\1/i.test(w)},
+];
+
+const $=(s,r=document)=>r.querySelector(s);
+
+/* TTS */
+let voices=[];
+function refreshVoices(){
+  if(!window.speechSynthesis) return;
+  voices=speechSynthesis.getVoices()||[];
+  const sel=$("#voice"); sel.innerHTML="";
+  const o0=document.createElement("option"); o0.value=""; o0.textContent=voices.length?"Default":"No voices"; sel.appendChild(o0);
+  voices.forEach((v,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=`${v.name} (${v.lang})`;sel.appendChild(o);});
+}
+function speak(text,rate=1.0){
+  if(!window.speechSynthesis) return;
+  const u=new SpeechSynthesisUtterance(String(text||""));
+  const idx=parseInt($("#voice").value,10);
+  if(Number.isFinite(idx)&&voices[idx]) u.voice=voices[idx];
+  u.rate=Math.max(0.65,Math.min(1.15,rate));
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+
+const state={variant:"standard", taskId:TASKS[0].id, words:[], selected:new Set()};
+
+function tokenize(t){
+  return t.split(/\s+/).filter(Boolean).map((raw,i)=>{
+    const clean=raw.replace(/^[^\w]+|[^\w]+$/g,"");
+    return {i, raw, clean};
+  });
+}
+function task(){ return TASKS.find(x=>x.id===state.taskId)||TASKS[0]; }
+function answers(){
+  const a=new Set();
+  state.words.forEach(w=>{ if(task().match(w.clean)) a.add(w.i); });
+  return a;
+}
+function setVariant(v){
+  state.variant=(v==="supported")?"supported":"standard";
+  document.body.classList.toggle("supported", state.variant==="supported");
+  render();
+}
+function setStatus(t){ $("#status").innerHTML=t; }
+
+function renderHeader(){
+  $("#taskTitle").textContent=task().title;
+  $("#taskHint").textContent=(state.variant==="supported")
+    ? `Support: ${task().hint} (Click a word to see “match / not”.)`
+    : task().hint;
+  $("#need").textContent=String(answers().size);
+}
+function renderText(){
+  const box=$("#text"); box.innerHTML="";
+  state.words.forEach(w=>{
+    const s=document.createElement("span");
+    s.className="word";
+    const isOn=state.selected.has(w.i);
+    s.classList.toggle("on", isOn);
+
+    const why=task().match(w.clean) ? "match" : "not";
+    s.innerHTML = `${w.raw}<span class="mini">${why}</span>`;
+
+    s.addEventListener("click",()=>toggle(w.i));
+    box.appendChild(s);
+  });
+}
+function toggle(i){
+  if(state.selected.has(i)) state.selected.delete(i); else state.selected.add(i);
+  $("#sel").textContent=String(state.selected.size);
+  if(state.variant==="supported"){
+    const w=state.words.find(x=>x.i===i);
+    if(w) speak(w.clean||w.raw,0.95);
+  }
+  setStatus("ready");
+  renderText();
+}
+function clearSel(){
+  state.selected=new Set();
+  $("#sel").textContent="0"; $("#corr").textContent="0";
+  setStatus("ready");
+  render();
+}
+function check(){
+  const a=answers();
+  const nodes=[...$("#text").querySelectorAll(".word")];
+  nodes.forEach((node,i)=>{
+    node.classList.remove("correct","wrong");
+    if(state.selected.has(i)) node.classList.add(a.has(i) ? "correct" : "wrong");
+  });
+  let corr=0; state.selected.forEach(i=>{ if(a.has(i)) corr++; });
+  $("#corr").textContent=String(corr);
+  if(corr===a.size && state.selected.size===a.size) setStatus(`<span class="ok">all correct ✅</span>`);
+  else setStatus(`<span class="no">keep going</span> — ${corr}/${a.size} correct`);
+}
+function show(){
+  state.selected=new Set([...answers()]);
+  $("#sel").textContent=String(state.selected.size);
+  check(); setStatus("answers shown");
+}
+
+function render(){
+  renderHeader();
+  renderText();
+}
+function init(){
+  const sel=$("#taskSel");
+  TASKS.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.title;sel.appendChild(o);});
+  state.words=tokenize(TEXT);
+
+  $("#variant").addEventListener("change",(e)=>setVariant(e.target.value));
+  $("#taskSel").addEventListener("change",(e)=>{state.taskId=e.target.value; clearSel();});
+  $("#read").addEventListener("click",()=>speak(TEXT,0.95));
+  $("#clear").addEventListener("click",clearSel);
+  $("#check").addEventListener("click",check);
+  $("#show").addEventListener("click",show);
+
+  refreshVoices(); if(window.speechSynthesis) speechSynthesis.onvoiceschanged=refreshVoices;
+  render();
+}
+init();
+</script>
+</body>
+</html>
