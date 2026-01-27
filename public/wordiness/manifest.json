@@ -1,0 +1,117 @@
+﻿[
+    {
+        "file":  "wordiness-syllable-tiles.html",
+        "title":  "Syllable Tiles",
+        "desc":  "Chunk and blend words using syllable tiles + TTS.",
+        "tags":  [
+                     "syllables",
+                     "phonics",
+                     "mix",
+                     "classroom",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  100
+    },
+    {
+        "file":  "syllable-tiles.html",
+        "title":  "Syllable Tiles",
+        "desc":  "Chunk and blend words using syllable tiles + TTS.",
+        "tags":  [
+                     "syllables",
+                     "phonics",
+                     "tts",
+                     "classroom"
+                 ],
+        "seedable":  true,
+        "order":  100
+    },
+    {
+        "file":  "wordiness-calm-spell-lab.htm",
+        "title":  "Calm Spell Lab",
+        "desc":  "Low-pressure spelling practice with calming pacing.",
+        "tags":  [
+                     "spelling",
+                     "regulation",
+                     "mix",
+                     "classroom",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  200
+    },
+    {
+        "file":  "wordiness-lab-shapes-sounds.html",
+        "title":  "Shapes \u0026 Sounds Lab",
+        "desc":  "Play with sounds: rhyme radar, syllable shuffle, and sound shapes (phonological awareness).",
+        "tags":  [
+                     "phonological-awareness",
+                     "rhyme",
+                     "syllables",
+                     "tts",
+                     "classroom"
+                 ],
+        "seedable":  false,
+        "order":  200
+    },
+    {
+        "file":  "wordiness-morpheme-lego.htm",
+        "title":  "Morpheme Lego",
+        "desc":  "Snap prefixes, roots, and suffixes to build meaning.",
+        "tags":  [
+                     "morphology",
+                     "word-building",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  300
+    },
+    {
+        "file":  "wordiness-morpheme-mixer.htm",
+        "title":  "Morpheme Mixer",
+        "desc":  "Snap prefixes, roots, and suffixes to build meaning.",
+        "tags":  [
+                     "morphology",
+                     "word-building",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  300
+    },
+    {
+        "file":  "wordiness-word-stress-dj.htm",
+        "title":  "Word Stress DJ",
+        "desc":  "Feel the beat of word stress patterns (prosody practice).",
+        "tags":  [
+                     "stress",
+                     "pronunciation",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  400
+    },
+    {
+        "file":  "wordiness-word-stress-dj-remix.htm",
+        "title":  "Word Stress DJ Remix",
+        "desc":  "Feel the beat of word stress patterns (prosody practice).",
+        "tags":  [
+                     "stress",
+                     "pronunciation",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  400
+    },
+    {
+        "file":  "wordiness-focus-finder.htm",
+        "title":  "Focus Finder",
+        "desc":  "Find the target quicklyâ€”gentle focus training with language.",
+        "tags":  [
+                     "attention",
+                     "executive-function",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  1003
+    }
+]
