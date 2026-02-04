@@ -52,7 +52,7 @@ function pickSentences(text: string, stage: number, max = 8): string[] {
     const w = countWords(s);
     if (w < minW || w > maxW) return false;
     // avoid super-short fragments or weird punctuation-only lines
-    if (!/[\p{L}\p{M}]/u.test(s)) return false;
+    if (!/[A-Za-zÃ€-Ã–Ã˜-Ã¶Ã¸-Ã¿]/.test(s)) return false;
     return true;
   });
 
@@ -75,7 +75,7 @@ function pickSentences(text: string, stage: number, max = 8): string[] {
 function wrapEveryWord(sentence: string) {
   // Wrap word tokens in *...* so DragText makes them draggable+blank.
   // Keep punctuation outside.
-  return sentence.replace(/([\p{L}\p{M}\p{N}\u0027]+)/gu, "**");
+  return sentence.replace(/\b([A-Za-zÃ€-Ã–Ã˜-Ã¶Ã¸-Ã¿0-9']+)\b/g, "*$1*");
 }
 
 function buildDragTextParams(textField: string) {
