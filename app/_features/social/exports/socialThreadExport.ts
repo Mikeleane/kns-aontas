@@ -1,10 +1,10 @@
-/* app/_features/social/exports/socialThreadExport.ts
+﻿/* app/_features/social/exports/socialThreadExport.ts
    Social Thread HTML exporter (offline-friendly, kid-first)
    - Uses String.raw for the HTML template (prevents \s, \n etc being eaten)
    - IMPORTANT: NO backticks inside the embedded <script> (avoids breaking the TS template)
    - Embeds pack JSON safely as base64
    - Always renders (fallback sample pack + fatal error overlay)
-   - Adds classroom-friendly features aligned to Irish Primary English oral language (Stages 1–4)
+   - Adds classroom-friendly features aligned to Irish Primary English oral language (Stages 1â€“4)
 */
 "use client";
 
@@ -45,6 +45,7 @@ export type SocialThreadPack = {
 };
 
 export type ExportHtmlOptions = {
+  defaultLens?: string; // e.g. "builder" | "debate"
   defaultVariant?: "standard" | "supported";
   defaultPace?: "step" | "all";
   initialVisibleCount?: number;
@@ -160,7 +161,7 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${escapeHtml(baseTitle)} — Social Thread</title>
+<title>${escapeHtml(baseTitle)} â€” Social Thread</title>
 <style>
   :root{
     --bg:#0b1220;
@@ -312,23 +313,23 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
       </span>
 
       <span class="chip">Voice A:
-        <select id="voiceSel"><option value="">(loading…)</option></select>
+        <select id="voiceSel"><option value="">(loadingâ€¦)</option></select>
       </span>
 
       <span class="chip">Voice B:
-        <select id="voiceSelB"><option value="">(loading…)</option></select>
+        <select id="voiceSelB"><option value="">(loadingâ€¦)</option></select>
         <label style="margin-left:8px;cursor:pointer">
           <input id="autoVoicesChk" type="checkbox" style="vertical-align:middle;margin-right:6px" />
           Auto
         </label>
       </span>
 
-      <button id="btnKaraoke">🎤 Karaoke</button>
-      <button id="btnReadVisible">🔊 Read visible</button>
-      <button id="btnStop">⏹ Stop</button>
-      <button id="btnToggleEmojis">🙂 Emojis</button>
-      <button id="btnMask">🦊 Mask names</button>
-      <button id="btnMystery">🕵️ Mystery words</button>
+      <button id="btnKaraoke">ðŸŽ¤ Karaoke</button>
+      <button id="btnReadVisible">ðŸ”Š Read visible</button>
+      <button id="btnStop">â¹ Stop</button>
+      <button id="btnToggleEmojis">ðŸ™‚ Emojis</button>
+      <button id="btnMask">ðŸ¦Š Mask names</button>
+      <button id="btnMystery">ðŸ•µï¸ Mystery words</button>
     </div>
   </div>
 
@@ -374,7 +375,7 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
     </div>
 
     <div class="panel" id="panel-respect">
-      <div class="muted" style="margin-bottom:10px">A playful “talk quality” dashboard (a guide, not a judgement).</div>
+      <div class="muted" style="margin-bottom:10px">A playful â€œtalk qualityâ€ dashboard (a guide, not a judgement).</div>
       <div id="respectBox"></div>
     </div>
 
@@ -389,9 +390,9 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
   <div class="barwrap">
     <div class="progress" id="progress">0 / 0</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button id="btnNext">Next ➜</button>
+      <button id="btnNext">Next âžœ</button>
       <button id="btnAll">Show all</button>
-      <button id="btnTop">Top ↑</button>
+      <button id="btnTop">Top â†‘</button>
       <span class="chip">Speed:
         <select id="speedSel">
           <option value="0.85">Slow & clear</option>
@@ -441,32 +442,32 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
         { id:"c2", term:"Fair play", definition:"Playing honestly and following rules.", example:"Fair play means no diving or cheating." },
         { id:"c3", term:"Supporter", definition:"A person who cheers for a team.", example:"A supporter wears the team colours." },
         { id:"c4", term:"Strategy", definition:"A plan to help you succeed.", example:"Our strategy was to pass quickly." },
-        { id:"c5", term:"Respect", definition:"Being kind and listening to others.", example:"Respect means we don’t interrupt." },
+        { id:"c5", term:"Respect", definition:"Being kind and listening to others.", example:"Respect means we donâ€™t interrupt." },
         { id:"c6", term:"Opinion", definition:"What you think or believe.", example:"My opinion is that teamwork matters most." }
       ],
       standard: { messages: [
-        { id:"m1", speaker:"Aoife Ní Shúilleabháin", emoji:"🧶", text:"Did anyone watch the match last night? The passing was unreal." },
-        { id:"m2", speaker:"Cian O’Connor", emoji:"🦊", text:"I did! But I think the defence won it. They stayed calm under pressure." },
-        { id:"m3", speaker:"Niamh Fitzgerald", emoji:"🌈", text:"My favourite part was the teamwork. Everyone covered for each other." },
-        { id:"m4", speaker:"Oisín Murphy", emoji:"🧭", text:"Fair play matters too. If you win by cheating, did you really win?" },
-        { id:"m5", speaker:"Róisín Walsh", emoji:"🎨", text:"Some supporters get angry online. I think we can disagree with respect." },
-        { id:"m6", speaker:"Darragh Keane", emoji:"⚽", text:"What’s your strategy when your team is losing? More risk or stay patient?" },
-        { id:"m7", speaker:"Saoirse Flynn", emoji:"📚", text:"I’d stay patient and keep possession. Panic makes mistakes." },
-        { id:"m8", speaker:"Tadhg O’Brien", emoji:"🎻", text:"I’d bring on a fast player. Changing energy can change a game." },
-        { id:"m9", speaker:"Aoife Ní Shúilleabháin", emoji:"🧶", text:"My opinion: the best teams listen to each other on the pitch." },
-        { id:"m10", speaker:"Timmy O'Shea", emoji:"🗣️", text:"Class chat-starter: What makes a “good teammate” in sport and in school? Explain your reasons." }
+        { id:"m1", speaker:"Aoife NÃ­ ShÃºilleabhÃ¡in", emoji:"ðŸ§¶", text:"Did anyone watch the match last night? The passing was unreal." },
+        { id:"m2", speaker:"Cian Oâ€™Connor", emoji:"ðŸ¦Š", text:"I did! But I think the defence won it. They stayed calm under pressure." },
+        { id:"m3", speaker:"Niamh Fitzgerald", emoji:"ðŸŒˆ", text:"My favourite part was the teamwork. Everyone covered for each other." },
+        { id:"m4", speaker:"OisÃ­n Murphy", emoji:"ðŸ§­", text:"Fair play matters too. If you win by cheating, did you really win?" },
+        { id:"m5", speaker:"RÃ³isÃ­n Walsh", emoji:"ðŸŽ¨", text:"Some supporters get angry online. I think we can disagree with respect." },
+        { id:"m6", speaker:"Darragh Keane", emoji:"âš½", text:"Whatâ€™s your strategy when your team is losing? More risk or stay patient?" },
+        { id:"m7", speaker:"Saoirse Flynn", emoji:"ðŸ“š", text:"Iâ€™d stay patient and keep possession. Panic makes mistakes." },
+        { id:"m8", speaker:"Tadhg Oâ€™Brien", emoji:"ðŸŽ»", text:"Iâ€™d bring on a fast player. Changing energy can change a game." },
+        { id:"m9", speaker:"Aoife NÃ­ ShÃºilleabhÃ¡in", emoji:"ðŸ§¶", text:"My opinion: the best teams listen to each other on the pitch." },
+        { id:"m10", speaker:"Timmy O'Shea", emoji:"ðŸ—£ï¸", text:"Class chat-starter: What makes a â€œgood teammateâ€ in sport and in school? Explain your reasons." }
       ], checks: [] },
       supported: { messages: [
-        { id:"m1", speaker:"Aoife Ní Shúilleabháin", emoji:"🧶", text:"Did you watch the match? The passing was very good." },
-        { id:"m2", speaker:"Cian O’Connor", emoji:"🦊", text:"I watched it. The defenders stayed calm." },
-        { id:"m3", speaker:"Niamh Fitzgerald", emoji:"🌈", text:"Teamwork was my favourite part. People helped each other." },
-        { id:"m4", speaker:"Oisín Murphy", emoji:"🧭", text:"Fair play is important. We should follow rules." },
-        { id:"m5", speaker:"Róisín Walsh", emoji:"🎨", text:"We can disagree and still be respectful." },
-        { id:"m6", speaker:"Darragh Keane", emoji:"⚽", text:"If your team is losing, what should you do? Take risks or stay patient?" },
-        { id:"m7", speaker:"Saoirse Flynn", emoji:"📚", text:"Stay patient. Keep the ball. Don’t panic." },
-        { id:"m8", speaker:"Tadhg O’Brien", emoji:"🎻", text:"Change a player to change the energy." },
-        { id:"m9", speaker:"Aoife Ní Shúilleabháin", emoji:"🧶", text:"Good teams listen to each other." },
-        { id:"m10", speaker:"Timmy O'Shea", emoji:"🗣️", text:"Class chat: What is a good teammate? Tell one reason." }
+        { id:"m1", speaker:"Aoife NÃ­ ShÃºilleabhÃ¡in", emoji:"ðŸ§¶", text:"Did you watch the match? The passing was very good." },
+        { id:"m2", speaker:"Cian Oâ€™Connor", emoji:"ðŸ¦Š", text:"I watched it. The defenders stayed calm." },
+        { id:"m3", speaker:"Niamh Fitzgerald", emoji:"ðŸŒˆ", text:"Teamwork was my favourite part. People helped each other." },
+        { id:"m4", speaker:"OisÃ­n Murphy", emoji:"ðŸ§­", text:"Fair play is important. We should follow rules." },
+        { id:"m5", speaker:"RÃ³isÃ­n Walsh", emoji:"ðŸŽ¨", text:"We can disagree and still be respectful." },
+        { id:"m6", speaker:"Darragh Keane", emoji:"âš½", text:"If your team is losing, what should you do? Take risks or stay patient?" },
+        { id:"m7", speaker:"Saoirse Flynn", emoji:"ðŸ“š", text:"Stay patient. Keep the ball. Donâ€™t panic." },
+        { id:"m8", speaker:"Tadhg Oâ€™Brien", emoji:"ðŸŽ»", text:"Change a player to change the energy." },
+        { id:"m9", speaker:"Aoife NÃ­ ShÃºilleabhÃ¡in", emoji:"ðŸ§¶", text:"Good teams listen to each other." },
+        { id:"m10", speaker:"Timmy O'Shea", emoji:"ðŸ—£ï¸", text:"Class chat: What is a good teammate? Tell one reason." }
       ], checks: [] }
     };
   }
@@ -554,7 +555,7 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
 
   function maskedName(name){
     if (!state.maskNames) return name;
-    var animals = ["🦊 Fox","🦦 Otter","🦉 Owl","🦝 Raccoon","🐧 Penguin","🐬 Dolphin","🦁 Lion","🐼 Panda"];
+    var animals = ["ðŸ¦Š Fox","ðŸ¦¦ Otter","ðŸ¦‰ Owl","ðŸ¦ Raccoon","ðŸ§ Penguin","ðŸ¬ Dolphin","ðŸ¦ Lion","ðŸ¼ Panda"];
     var sum = 0;
     for (var i=0;i<name.length;i++) sum += name.charCodeAt(i);
     return animals[sum % animals.length];
@@ -617,10 +618,10 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
   }
 
   var SOUND = {
-    1: ["I agree.","I like…","I think…","Can you say that again?","Because…"],
-    2: ["I agree because…","I disagree because…","My reason is…","Can you explain?","In my opinion…"],
-    3: ["I see your point, but…","Another example is…","I want to add…","What makes you think that?","Let’s summarise…"],
-    4: ["I can justify that because…","The evidence is…","A counterpoint is…","Let’s build on that idea…","Can we agree on…?"]
+    1: ["I agree.","I likeâ€¦","I thinkâ€¦","Can you say that again?","Becauseâ€¦"],
+    2: ["I agree becauseâ€¦","I disagree becauseâ€¦","My reason isâ€¦","Can you explain?","In my opinionâ€¦"],
+    3: ["I see your point, butâ€¦","Another example isâ€¦","I want to addâ€¦","What makes you think that?","Letâ€™s summariseâ€¦"],
+    4: ["I can justify that becauseâ€¦","The evidence isâ€¦","A counterpoint isâ€¦","Letâ€™s build on that ideaâ€¦","Can we agree onâ€¦?"]
   };
 
   function renderSoundboard(){
@@ -632,7 +633,7 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
       b.textContent = txt;
       b.addEventListener("click", function(){
         try{ navigator.clipboard && navigator.clipboard.writeText && navigator.clipboard.writeText(txt); }catch(e){}
-        b.textContent = "✓ Copied";
+        b.textContent = "âœ“ Copied";
         setTimeout(function(){ b.textContent = txt; }, 800);
       });
       soundboardEl.appendChild(b);
@@ -693,7 +694,7 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
 
   function stars(n){
     var nn = Math.max(0, Math.min(5, n|0));
-    return "★★★★★☆☆☆☆☆".slice(5 - nn, 10 - nn);
+    return "â˜…â˜…â˜…â˜…â˜…â˜†â˜†â˜†â˜†â˜†".slice(5 - nn, 10 - nn);
   }
 
   function scoreVisible(messages){
@@ -719,17 +720,17 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
       '<div class="concept"><div class="term">Kindness</div><div class="def">' + stars(kind) +
       '</div><div class="ex muted">Try: please/thanks, no put-downs, listen first.</div></div>' +
       '<div class="concept" style="margin-top:10px"><div class="term">Questions</div><div class="def">' + stars(s.questions) +
-      '</div><div class="ex muted">Try: “Can you explain?”, “What makes you think that?”</div></div>' +
+      '</div><div class="ex muted">Try: â€œCan you explain?â€, â€œWhat makes you think that?â€</div></div>' +
       '<div class="concept" style="margin-top:10px"><div class="term">Reasons</div><div class="def">' + stars(s.reasons) +
-      '</div><div class="ex muted">Try: “I think… because…”, “My reason is…”</div></div>';
+      '</div><div class="ex muted">Try: â€œI thinkâ€¦ becauseâ€¦â€, â€œMy reason isâ€¦â€</div></div>';
   }
 
   function renderWriting(){
     var scaff = state.variant === "supported";
     var prompts = scaff ? [
-      "Write a short reply to message 6. Use: I think… because…",
+      "Write a short reply to message 6. Use: I thinkâ€¦ becauseâ€¦",
       "Summarise the chat in 3 short sentences.",
-      "Write one kind disagreement. Use: I see your point, but…"
+      "Write one kind disagreement. Use: I see your point, butâ€¦"
     ] : [
       "Write a thoughtful reply to message 6, giving two reasons.",
       "Summarise the conversation in 3 bullet points: main idea, evidence, conclusion.",
@@ -755,7 +756,7 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
       VOICES.forEach(function(v){
         var o = document.createElement("option");
         o.value = v.voiceURI;
-        o.textContent = v.name + " — " + v.lang;
+        o.textContent = v.name + " â€” " + v.lang;
         sel.appendChild(o);
       });
     }
@@ -836,10 +837,10 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
     var hasBecause = /\bbecause\b/i.test(txt);
 
     var items = [];
-    items.push({ title:"Talk move", body: hasQ ? "Answer the question and give a reason." : "Add a reason: “because …”" });
-    items.push({ title:"Listening", body:"Start with: “I heard you say…” then respond." });
-    items.push({ title:"Respect", body:"Disagree kindly: “I see your point, but…”" });
-    if (!hasBecause) items.push({ title:"Reasons", body:"Try: “I think… because…”" });
+    items.push({ title:"Talk move", body: hasQ ? "Answer the question and give a reason." : "Add a reason: â€œbecause â€¦â€" });
+    items.push({ title:"Listening", body:"Start with: â€œI heard you sayâ€¦â€ then respond." });
+    items.push({ title:"Respect", body:"Disagree kindly: â€œI see your point, butâ€¦â€" });
+    if (!hasBecause) items.push({ title:"Reasons", body:"Try: â€œI thinkâ€¦ becauseâ€¦â€" });
     if (state.variant === "supported") items.push({ title:"Sentence starter", body:"I think ______ because ______." });
 
     items.forEach(function(it){
@@ -869,7 +870,7 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
       msg.className = "msg";
       msg.setAttribute("data-mi", String(idx));
 
-      var emoji = (state.showEmojis && m.emoji) ? String(m.emoji) : "💬";
+      var emoji = (state.showEmojis && m.emoji) ? String(m.emoji) : "ðŸ’¬";
       var spk = maskedName(String(m.speaker || "Speaker"));
       var time = m.time ? String(m.time) : "";
 
@@ -887,11 +888,11 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
       if (time) html += '<span class="k">' + escapeHtml(time) + "</span>";
       if (state.showEmojis && m.emoji) html += '<span class="k">' + escapeHtml(String(m.emoji)) + "</span>";
       html += '</div><div class="actions">';
-      html += '<button class="mini" data-act="speak" data-idx="' + idx + '">🔊 Speak</button>';
+      html += '<button class="mini" data-act="speak" data-idx="' + idx + '">ðŸ”Š Speak</button>';
       html += "</div></div>";
       html += '<div class="' + bubbleClass + '" data-bubble="' + idx + '">' + bubbleHtml + tail + "</div>";
       html += '<div class="reactions">';
-      ["👍","😂","😮","🤔","❤️"].forEach(function(r){
+      ["ðŸ‘","ðŸ˜‚","ðŸ˜®","ðŸ¤”","â¤ï¸"].forEach(function(r){
         html += '<span class="react" data-react="' + r + '" data-idx="' + idx + '">' + r + ' <strong id="rc-' + idx + '-' + r + '">0</strong></span>';
       });
       html += "</div>";
@@ -1075,27 +1076,27 @@ function buildHtml(packB64: string, optsB64: string, baseTitle: string) {
 
   btnToggleEmojis.addEventListener("click", function(){
     state.showEmojis = !state.showEmojis;
-    btnToggleEmojis.textContent = state.showEmojis ? "🙂 Emojis" : "🚫 Emojis";
+    btnToggleEmojis.textContent = state.showEmojis ? "ðŸ™‚ Emojis" : "ðŸš« Emojis";
     render();
   });
 
   btnMask.addEventListener("click", function(){
     state.maskNames = !state.maskNames;
-    btnMask.textContent = state.maskNames ? "🦊 Names masked" : "🦊 Mask names";
+    btnMask.textContent = state.maskNames ? "ðŸ¦Š Names masked" : "ðŸ¦Š Mask names";
     render();
   });
 
   btnMystery.addEventListener("click", function(){
     state.mystery = !state.mystery;
-    btnMystery.textContent = state.mystery ? "🕵️ Mystery ON" : "🕵️ Mystery words";
+    btnMystery.textContent = state.mystery ? "ðŸ•µï¸ Mystery ON" : "ðŸ•µï¸ Mystery words";
     render();
   });
 
   // Karaoke mode (word highlighting while speaking)
-  btnKaraoke.textContent = state.karaoke ? "🎤 Karaoke" : "🎤 Karaoke OFF";
+  btnKaraoke.textContent = state.karaoke ? "ðŸŽ¤ Karaoke" : "ðŸŽ¤ Karaoke OFF";
   btnKaraoke.addEventListener("click", function(){
     state.karaoke = !state.karaoke;
-    btnKaraoke.textContent = state.karaoke ? "🎤 Karaoke" : "🎤 Karaoke OFF";
+    btnKaraoke.textContent = state.karaoke ? "ðŸŽ¤ Karaoke" : "ðŸŽ¤ Karaoke OFF";
     render();
   });
 
@@ -1149,3 +1150,4 @@ function escapeHtml(s: string) {
 function escapeAttr(s: string) {
   return escapeHtml(s).replace(/[\x60]/g, "&#96;");
 }
+
