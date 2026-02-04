@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { ReadingMode, ReadingPackData } from "../readingPackTypes";
@@ -36,7 +36,7 @@ const STAGE_PROFILES: Record<number, StageProfile> = {
   3: {
     stage: 3,
     label: "Stage 3 (Secure reading / comprehension)",
-    focus: ["literal + inferential comprehension", "author’s craft", "vocabulary (tier 2/3)", "summarising"],
+    focus: ["literal + inferential comprehension", "authorâ€™s craft", "vocabulary (tier 2/3)", "summarising"],
     sentenceCount: 5,
     maxSentenceWords: 18,
     clozeBlanks: 4,
@@ -225,7 +225,7 @@ function buildGames(pack: ReadingPackData, profile: StageProfile): AnyGame[] {
     });
   });
 
-  // Syllable clap: 6–10 words
+  // Syllable clap: 6â€“10 words
   vocab.slice(0, Math.min(10, Math.max(6, profile.vocabTargets - 2))).forEach((w, i) => {
     games.push({
       id: `sy_${i}`,
@@ -333,7 +333,7 @@ function WordOrderGameView(props: { game: WordOrderGame; supported: boolean; fon
   function check() {
     const attempt = built.join(" ").trim();
     if (!attempt) return;
-    setMsg(attempt === correct ? "✅ Correct!" : "Not quite — tweak the order.");
+    setMsg(attempt === correct ? "âœ… Correct!" : "Not quite â€” tweak the order.");
   }
 
   // Supported mode: lock first token as a scaffold (same target, same answer)
@@ -364,9 +364,9 @@ function WordOrderGameView(props: { game: WordOrderGame; supported: boolean; fon
       <div style={{ padding: 10, borderRadius: 14, border: "1px solid rgba(15,23,42,.14)", background: "#f8fafc" }}>
         <div style={{ fontWeight: 900, fontSize: 12, color: "#475569", marginBottom: 6 }}>Build the sentence:</div>
         <div style={{ fontSize: props.fontSizePx, lineHeight: 1.6, minHeight: 40 }}>
-          {built.length ? built.join(" ") : <span style={{ color: "#94a3b8" }}>Tap words below…</span>}
+          {built.length ? built.join(" ") : <span style={{ color: "#94a3b8" }}>Tap words belowâ€¦</span>}
         </div>
-        {msg && <div style={{ marginTop: 8, fontWeight: 900, color: msg.startsWith("✅") ? "#16a34a" : "#b45309" }}>{msg}</div>}
+        {msg && <div style={{ marginTop: 8, fontWeight: 900, color: msg.startsWith("âœ…") ? "#16a34a" : "#b45309" }}>{msg}</div>}
       </div>
 
       <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -392,7 +392,7 @@ function WordOrderGameView(props: { game: WordOrderGame; supported: boolean; fon
 
       {supported && (
         <div style={{ marginTop: 10, color: "#64748b", fontSize: 12 }}>
-          Supported scaffold: first word placed for you — same sentence, same goal.
+          Supported scaffold: first word placed for you â€” same sentence, same goal.
         </div>
       )}
     </div>
@@ -427,7 +427,7 @@ function ClozeGameView(props: { game: ClozeGame; supported: boolean; fontSizePx:
   function check() {
     const ok =
       parts.blanks.every((w, i) => String(answers[i] || "").trim().toLowerCase() === w.toLowerCase());
-    setMsg(ok ? "✅ Correct!" : "Not quite — check spelling or word choice.");
+    setMsg(ok ? "âœ… Correct!" : "Not quite â€” check spelling or word choice.");
   }
 
   return (
@@ -458,7 +458,7 @@ function ClozeGameView(props: { game: ClozeGame; supported: boolean; fontSizePx:
                   onChange={(e) => setAnswers((a) => ({ ...a, [i]: e.target.value }))}
                   style={{ padding: "6px 8px", borderRadius: 10, border: "1px solid rgba(15,23,42,.14)", fontWeight: 900 }}
                 >
-                  <option value="">—</option>
+                  <option value="">â€”</option>
                   {bank.map((w, k) => (
                     <option key={k} value={w}>
                       {w}
@@ -469,7 +469,7 @@ function ClozeGameView(props: { game: ClozeGame; supported: boolean; fontSizePx:
                 <input
                   value={answers[i] || ""}
                   onChange={(e) => setAnswers((a) => ({ ...a, [i]: e.target.value }))}
-                  placeholder="…"
+                  placeholder="â€¦"
                   style={{ width: 110, padding: "6px 8px", borderRadius: 10, border: "1px solid rgba(15,23,42,.14)", fontWeight: 900 }}
                 />
               )}
@@ -482,7 +482,7 @@ function ClozeGameView(props: { game: ClozeGame; supported: boolean; fontSizePx:
         <button type="button" onClick={check} style={miniBtnStyleStrong}>
           Check
         </button>
-        {msg && <div style={{ fontWeight: 1000, color: msg.startsWith("✅") ? "#16a34a" : "#b45309", paddingTop: 8 }}>{msg}</div>}
+        {msg && <div style={{ fontWeight: 1000, color: msg.startsWith("âœ…") ? "#16a34a" : "#b45309", paddingTop: 8 }}>{msg}</div>}
       </div>
 
       <div style={{ marginTop: 10, color: "#64748b", fontSize: 12 }}>
@@ -494,7 +494,7 @@ function ClozeGameView(props: { game: ClozeGame; supported: boolean; fontSizePx:
 
 function SyllableGameView(props: { games: SyllableGame[]; fontSizePx: number; voice: VoiceChoice }) {
   const [idx, setIdx] = useState(0);
-  const g = games[idx];
+  const g = props.games[idx];
 
   const [attempt, setAttempt] = useState("");
   const [msg, setMsg] = useState("");
@@ -502,7 +502,7 @@ function SyllableGameView(props: { games: SyllableGame[]; fontSizePx: number; vo
   if (!g) return null;
 
   function check() {
-    // Teacher-facing: we accept “close enough” and show an estimate (this is a support tool)
+    // Teacher-facing: we accept â€œclose enoughâ€ and show an estimate (this is a support tool)
     const typed = attempt.split("-").map((x) => x.trim()).filter(Boolean).length;
     setMsg(typed ? `You typed ${typed}. Estimated syllables: ${g.approxSyllables}.` : `Estimated syllables: ${g.approxSyllables}.`);
   }
@@ -517,7 +517,7 @@ function SyllableGameView(props: { games: SyllableGame[]; fontSizePx: number; vo
           Next
         </button>
         <button type="button" onClick={() => speakText(g.word, props.voice, 0.95, 1)} style={miniBtnStyleStrong}>
-          🔊 Say word
+          ðŸ”Š Say word
         </button>
       </div>
 
@@ -574,7 +574,7 @@ function MorphologyGameView(props: { games: MorphGame[]; supported: boolean; fon
       String(prefix || "").toLowerCase() === String(g.split.prefix || "").toLowerCase() &&
       String(root || "").toLowerCase() === String(g.split.root || "").toLowerCase() &&
       String(suffix || "").toLowerCase() === String(g.split.suffix || "").toLowerCase();
-    setMsg(correct ? "✅ Looks good." : "Close — try adjusting prefix/root/suffix.");
+    setMsg(correct ? "âœ… Looks good." : "Close â€” try adjusting prefix/root/suffix.");
   }
 
   return (
@@ -587,14 +587,14 @@ function MorphologyGameView(props: { games: MorphGame[]; supported: boolean; fon
           Next
         </button>
         <button type="button" onClick={() => speakText(g.word, props.voice, 0.95, 1)} style={miniBtnStyleStrong}>
-          🔊 Say word
+          ðŸ”Š Say word
         </button>
       </div>
 
       <div style={{ padding: 12, borderRadius: 16, border: "1px solid rgba(15,23,42,.14)", background: "#f8fafc" }}>
         <div style={{ fontWeight: 1000, color: "#0f172a", fontSize: props.fontSizePx + 4 }}>{g.word}</div>
         <div style={{ color: "#64748b", fontSize: 12, marginTop: 6 }}>
-          Identify <b>prefix</b>, <b>root</b>, <b>suffix</b>. (Not every word has all three — that’s part of the fun.)
+          Identify <b>prefix</b>, <b>root</b>, <b>suffix</b>. (Not every word has all three â€” thatâ€™s part of the fun.)
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 12 }}>
@@ -616,7 +616,7 @@ function MorphologyGameView(props: { games: MorphGame[]; supported: boolean; fon
           <button type="button" onClick={check} style={miniBtnStyleStrong}>
             Check
           </button>
-          {msg && <div style={{ fontWeight: 1000, color: msg.startsWith("✅") ? "#16a34a" : "#b45309", paddingTop: 8 }}>{msg}</div>}
+          {msg && <div style={{ fontWeight: 1000, color: msg.startsWith("âœ…") ? "#16a34a" : "#b45309", paddingTop: 8 }}>{msg}</div>}
         </div>
 
         <div style={{ marginTop: 10, color: "#64748b", fontSize: 12 }}>
@@ -668,7 +668,7 @@ function TeacherResources(props: { profile: StageProfile; pack: ReadingPackData 
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <SectionCard
-        title={`Teacher resources — aligned to ${props.profile.label}`}
+        title={`Teacher resources â€” aligned to ${props.profile.label}`}
         subtitle={`Pack: ${title}`}
       >
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -688,16 +688,16 @@ function TeacherResources(props: { profile: StageProfile; pack: ReadingPackData 
         </ul>
       </SectionCard>
 
-      <SectionCard title="Word lab mini-lessons" subtitle="Short, teacher-friendly tasks (5–8 minutes)">
+      <SectionCard title="Word lab mini-lessons" subtitle="Short, teacher-friendly tasks (5â€“8 minutes)">
         <ul style={{ margin: 0, paddingLeft: 18, color: "#0f172a", lineHeight: 1.6 }}>
           <li>Clap syllables for 5 target words; sort into 1 / 2 / 3+ syllables.</li>
           <li>Prefix/root/suffix: build a meaning guess, then check in context.</li>
-          {props.profile.stage >= 3 && <li>Tier 2/3 vocab: “replace the word” with a near-synonym — what changes?</li>}
-          {props.profile.stage >= 4 && <li>Stretch: quick etymology curiosity — where might this word come from? (Latin/Greek/Old French?)</li>}
+          {props.profile.stage >= 3 && <li>Tier 2/3 vocab: â€œreplace the wordâ€ with a near-synonym â€” what changes?</li>}
+          {props.profile.stage >= 4 && <li>Stretch: quick etymology curiosity â€” where might this word come from? (Latin/Greek/Old French?)</li>}
         </ul>
 
         <div style={{ marginTop: 10, color: "#64748b", fontSize: 12 }}>
-          Note: “etymology” here is for curiosity + motivation. Keep it light and optional.
+          Note: â€œetymologyâ€ here is for curiosity + motivation. Keep it light and optional.
         </div>
       </SectionCard>
 
@@ -781,8 +781,8 @@ export default function InAppActivities(props: { pack: ReadingPackData; mode: Re
       ) : (
         <div style={{ display: "grid", gap: 12 }}>
           <SectionCard
-            title={`Games — ${profile.label}`}
-            subtitle={`Mode: ${supported ? "Supported (B)" : "Standard (A)"} • Same learning targets, supported adds scaffolds`}
+            title={`Games â€” ${profile.label}`}
+            subtitle={`Mode: ${supported ? "Supported (B)" : "Standard (A)"} â€¢ Same learning targets, supported adds scaffolds`}
           >
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <button type="button" onClick={() => setGameTab("word_order")} style={gameTab === "word_order" ? miniBtnStyleStrong : miniBtnStyle}>
@@ -851,3 +851,4 @@ export default function InAppActivities(props: { pack: ReadingPackData; mode: Re
     </div>
   );
 }
+
