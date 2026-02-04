@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
+import { buildWordinessSeedFromText } from "../wordiness/buildWordinessSeed";
 // Re-export types so other files that imported from ReadingPackApp keep working.
 export type { ReadingMode, ReadingPackData, ExerciseItem, ExerciseSide } from "./readingPackTypes";
 
@@ -10,10 +10,8 @@ import { buildInteractiveHtml } from "./exports/interactiveHtml";
 import { buildPrintablesHtml, buildTeacherKeyHtml, splitParas } from "./exports/printablesHtml";
 import { buildPrintablesPdfBytes } from "./exports/printablesPdf";
 import { buildPrintablesDocxBlob } from "./exports/printablesDocx";
-
 // ✅ Social thread export (copied from your bcomm-y3 work)
 import { exportSocialThreadHtml } from "../social/exports/socialThreadExport";
-
 type Props = {
   pack?: ReadingPackData | null;
   onPackChange?: (p: ReadingPackData | null) => void;
@@ -39,8 +37,8 @@ function slugify(s: string) {
     .trim()
     .replace(/['"]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/(^-|-$)/g, "");
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "reading-pack";
 }
 
 function downloadBlobFile(filename: string, blob: Blob) {
@@ -191,10 +189,21 @@ async function postJson<T>(url: string, body: any, signal?: AbortSignal): Promis
   });
   const raw = await res.text().catch(() => "");
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${raw || res.statusText}`);
-  return (raw ? (JSON.parse(raw) as T) : ({} as T));
+  // Wordiness: keep a seeded word pool in localStorage for the Wordiness Hub (/wordiness)return (raw ? (JSON.parse(raw) as T) : ({} as T));
 }
 
 export default function ReadingPackApp(props: Props) {
+  
+    useEffect(() => {
+      try {
+        const textForSeed = String((socialSource || socialSource || "") ?? "");
+        if (!textForSeed.trim()) return;
+        const seed = buildWordinessSeedFromText(textForSeed, "reading-pack");
+        localStorage.setItem("wordiness_seed_json", JSON.stringify(seed));
+      } catch (e) {}
+    }, []);
+    
+
   const crestFallbackPath = props.crestFallbackPath || "/kns-crest.jpg";
 
   const [pack, setPack] = useState<ReadingPackData | null>(props.pack ?? null);
@@ -502,10 +511,31 @@ export default function ReadingPackApp(props: Props) {
     const t = String(socialPack?.title || "Social Thread");
     return `${t} • Std: ${stdMsgs} msgs / ${stdChecks} checks • Sup: ${supMsgs} msgs / ${supChecks} checks`;
   }, [socialPack]);
-
+  // Wordiness: keep a seeded word pool in localStorage for the Wordiness Hub (/wordiness)
+  useEffect(() => {
+    try {
+      const textForSeed = String((socialSource || socialSource || "") ?? "");
+      if (!textForSeed.trim()) return;
+      const seed = buildWordinessSeedFromText(textForSeed, "reading-pack");
+      localStorage.setItem("wordiness_seed_json", JSON.stringify(seed));
+    } catch (e) {}
+  }, []);
   return (
     <div style={pageWrap}>
-      <div style={innerWrap}>
+      
+      {/* Wordiness quick launch */}
+      <div style={{ position: "fixed", right: 12, bottom: 12, zIndex: 9999 }}>
+        <button
+          type="button"
+          onClick={() => window.open("/wordiness", "_blank", "noopener,noreferrer")}
+          style={{ padding: "10px 14px", borderRadius: 999, border: "1px solid rgba(0,0,0,.22)", background: "white", fontWeight: 900 }}
+          aria-label="Open Wordiness Hub"
+          title="Open Wordiness Hub"
+        >
+          Wordiness
+        </button>
+      </div>
+<div style={innerWrap}>
         {/* Header */}
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" }}>
           <div>

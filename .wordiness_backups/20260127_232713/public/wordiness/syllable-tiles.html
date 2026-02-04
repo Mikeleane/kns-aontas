@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Wordiness — Syllable Tiles Studio (Fixed v4)</title>
+<title>Wordiness â€” Syllable Tiles Studio (Fixed v4)</title>
 <style>
   :root{
     --bg:#070b16; --line:rgba(255,255,255,.14);
@@ -64,8 +64,8 @@
 <div class="wrap">
   <header>
     <div>
-      <h1>Wordiness — Syllable Tiles Studio (Fixed v4)</h1>
-      <div class="sub">v4 removes aggressive “cleaning” completely (it caused weird outputs like <b>sps</b>). We now only normalize dashes and split.</div>
+      <h1>Wordiness â€” Syllable Tiles Studio (Fixed v4)</h1>
+      <div class="sub">v4 removes aggressive â€œcleaningâ€ completely (it caused weird outputs like <b>sps</b>). We now only normalize dashes and split.</div>
     </div>
     <div class="row">
       <label class="row" style="gap:6px;color:var(--muted);font-size:13px">View
@@ -87,8 +87,8 @@
       <div>
         <div class="sub">Input</div>
         <div class="hint">
-          One word per line. Use <b>-</b> or <b>·</b> between syllables.<br>
-          Fancy dashes <b>–</b> <b>—</b> <b>‑</b> <b>−</b> are auto-normalized to <b>-</b>.
+          One word per line. Use <b>-</b> or <b>Â·</b> between syllables.<br>
+          Fancy dashes <b>â€“</b> <b>â€”</b> <b>â€‘</b> <b>âˆ’</b> are auto-normalized to <b>-</b>.
         </div>
       </div>
       <div class="row">
@@ -99,7 +99,7 @@
 
     <div class="bd">
       <textarea id="input" spellcheck="false" placeholder="re-spon-si-bi-li-ty&#10;in-for-ma-tion&#10;op-por-tu-ni-ty"></textarea>
-      <div class="status" id="status">Tip: click <b>Load demo</b>. If you still get nonsense, open Diagnostics and we’ll see the exact characters.</div>
+      <div class="status" id="status">Tip: click <b>Load demo</b>. If you still get nonsense, open Diagnostics and weâ€™ll see the exact characters.</div>
       <details>
         <summary>Diagnostics (debug)</summary>
         <div class="mono" id="diag"></div>
@@ -163,11 +163,11 @@ async function speakChunks(chunks, rate=0.86){
 }
 
 /* ---------- Parsing (NO aggressive cleaning) ---------- */
-const DASHES = /[\u2010\u2011\u2012\u2013\u2014\u2212]/g; // ‐ ‑ ‒ – — −
+const DASHES = /[\u2010\u2011\u2012\u2013\u2014\u2212]/g; // â€ â€‘ â€’ â€“ â€” âˆ’
 function normalizeLine(s){
   return String(s||"")
     .replace(DASHES, "-")
-    .replace(/\u00B7/g, "·"); // middle dot
+    .replace(/\u00B7/g, "Â·"); // middle dot
 }
 
 function parseLines(raw){
@@ -177,7 +177,7 @@ function splitSyllables(line){
   const norm = normalizeLine(line).trim();
 
   // Keep the raw text as-is (no stripping). Just split on hyphen/middle-dot sequences.
-  const parts = norm.split(/[-·]+/).map(s=>s.trim()).filter(Boolean);
+  const parts = norm.split(/[-Â·]+/).map(s=>s.trim()).filter(Boolean);
 
   // Build whole word: join parts, then remove spaces inside (just in case).
   const whole = parts.join("").replace(/\s+/g,"");
@@ -195,7 +195,7 @@ function toCodePoints(s){
   const arr = [];
   for (const ch of String(s||"")) {
     const cp = ch.codePointAt(0).toString(16).toUpperCase().padStart(4,"0");
-    arr.push(`U+${cp} '${ch === " " ? "␠" : ch}'`);
+    arr.push(`U+${cp} '${ch === " " ? "â " : ch}'`);
   }
   return arr.join(", ");
 }
@@ -227,7 +227,7 @@ function render(){
     row.innerHTML = `
       <div class="topline">
         <div>
-          <div class="w">${esc(whole || "—")}</div>
+          <div class="w">${esc(whole || "â€”")}</div>
           <div class="hint">Marked: <code>${esc(marked)}</code></div>
         </div>
         <div class="row">
@@ -287,6 +287,23 @@ $("#speakAll").onclick=async ()=>{
   }
 };
 
+  // --- Seed from URL hash: #seed=... (URL-encoded) ---
+  function applySeedFromHash(){
+    try{
+      const h = String(location.hash||"");
+      const m = h.match(/(?:^#|&)seed=([^&]+)/);
+      if(!m) return;
+      const seed = decodeURIComponent(m[1]||"").replace(/\r/g,"");
+      const ta = document.querySelector('#input');
+      if(ta && seed.trim()){
+        ta.value = seed;
+        if(typeof window.render === 'function') window.render();
+        else if(typeof render === 'function') render();
+      }
+    }catch(e){}
+  }
+  window.addEventListener('hashchange', applySeedFromHash);
+  setTimeout(applySeedFromHash, 80);
 refreshVoices();
 if(window.speechSynthesis) speechSynthesis.onvoiceschanged = refreshVoices;
 
@@ -297,5 +314,246 @@ $("#input").addEventListener("input", ()=>{
   t=setTimeout(render, 200);
 });
 </script>
+<!-- WORDINESS_FAILSAFE_PATCH v1 -->
+<script id="wordiness-failsafe-patch">
+(function(){
+  if (window.__wordinessFailsafePatch) return;
+  window.__wordinessFailsafePatch = true;
+
+  const VOWEL = /[aeiouy]/i;
+
+  const EXCEPTIONS = {
+    different:   { spelling:["dif","fer","ent"], spoken:[["dif","frent"],["dif","rent"]] },
+    vegetable:   { spelling:["ve","ge","ta","ble"], spoken:[["veg","ta","ble"],["vej","ta","bul"]] },
+    factory:     { spelling:["fac","to","ry"], spoken:[["fac","tuh","ree"],["fac","tri"]] },
+    family:      { spelling:["fam","i","ly"], spoken:[["fam","ly"]] },
+    chocolate:   { spelling:["choc","o","late"], spoken:[["choc","late"]] },
+    camera:      { spelling:["cam","er","a"], spoken:[["cam","ra"]] },
+    interesting: { spelling:["in","ter","est","ing"], spoken:[["in","tres","ting"]] },
+    probably:    { spelling:["prob","a","bly"], spoken:[["prob","ly"]] }
+  };
+
+  function hasVowelLetters(s){ return VOWEL.test(String(s||"")); }
+  function lettersSpaced(s){ return String(s||"").split("").join(" "); }
+  function onlyLetters(s){ return String(s||"").toLowerCase().replace(/[^a-z']/g,""); }
+
+  function normalizeLine(s){
+    return String(s||"")
+      .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, "-") // fancy dashes
+      .replace(/\u00B7/g, "·") // middle dot
+      .trim();
+  }
+
+  // Extract sensible words from pasted text, but preserve already-marked syllable lines
+  function sanitizeSeedText(raw){
+    raw = String(raw||"").replace(/\r/g,"");
+    const out = [];
+    for (const line0 of raw.split("\n")) {
+      const line = normalizeLine(line0);
+      if (!line) continue;
+
+      // Keep marked syllable lines like dif-fer-ent (no spaces)
+      if (/[-·]/.test(line) && !/\s/.test(line)) {
+        out.push(line);
+        continue;
+      }
+
+      // Otherwise extract word tokens from the line
+      const toks = line.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g);
+      if (!toks) continue;
+      for (const w of toks) {
+        if (w.length > 28) continue;
+        if (!hasVowelLetters(w)) continue;
+        out.push(w);
+      }
+    }
+
+    // de-dupe, preserve order
+    const seen = new Set();
+    const final = [];
+    for (const w of out) {
+      const k = w.toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      final.push(w);
+    }
+    return final.join("\n");
+  }
+
+  // Replace a specific line (by index) with chunked form, joined by '-'
+  function replaceLine(text, lineIndex, newChunks){
+    const lines = String(text||"").replace(/\r/g,"").split("\n");
+    if (lineIndex < 0 || lineIndex >= lines.length) return text;
+    lines[lineIndex] = newChunks.join("-");
+    return lines.join("\n");
+  }
+
+  // Find a textarea likely used for word lists
+  function findSeedTextarea(){
+    return document.querySelector("textarea#input, textarea#seed, textarea[data-seed], textarea");
+  }
+
+  // Build helper UI under textarea: reduction suggestions + failsafe warnings + sanitize button
+  function attachHelperUI(ta){
+    if (!ta || ta.__wordinessHelperAttached) return;
+    ta.__wordinessHelperAttached = true;
+
+    const host = document.createElement("div");
+    host.style.cssText = [
+      "margin-top:10px",
+      "border:1px solid rgba(255,255,255,.14)",
+      "border-radius:14px",
+      "padding:10px 12px",
+      "background:rgba(0,0,0,.10)",
+      "color:rgba(238,242,255,.85)",
+      "font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial",
+      "font-size:13px"
+    ].join(";");
+
+    const hdr = document.createElement("div");
+    hdr.style.cssText = "display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;";
+    hdr.innerHTML = `<b>Wordiness helpers</b>
+      <span style="opacity:.8">failsafes + disappearing-vowel options</span>`;
+    host.appendChild(hdr);
+
+    const btnRow = document.createElement("div");
+    btnRow.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;";
+    const sanitizeBtn = document.createElement("button");
+    sanitizeBtn.type = "button";
+    sanitizeBtn.textContent = "Sanitize pasted text → words";
+    sanitizeBtn.style.cssText =
+      "cursor:pointer;border-radius:999px;padding:8px 10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(238,242,255,.92);font-weight:700;";
+    btnRow.appendChild(sanitizeBtn);
+    host.appendChild(btnRow);
+
+    const msg = document.createElement("div");
+    msg.style.cssText = "margin-top:10px;opacity:.9;";
+    host.appendChild(msg);
+
+    const sug = document.createElement("div");
+    sug.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;";
+    host.appendChild(sug);
+
+    function refresh(){
+      const raw = String(ta.value||"");
+      const lines = raw.replace(/\r/g,"").split("\n").map(normalizeLine);
+      sug.innerHTML = "";
+
+      // Warnings: chunks with no vowel letters (only checks marked chunk lines)
+      let warnCount = 0;
+      for (const ln of lines) {
+        if (!ln) continue;
+        if (/[-·]/.test(ln) && !/\s/.test(ln)) {
+          const parts = ln.split(/[-·]+/).map(s=>s.trim()).filter(Boolean);
+          const bad = parts.filter(p=>!hasVowelLetters(p));
+          if (bad.length) warnCount++;
+        }
+      }
+
+      // Suggestions for disappearing vowels
+      const found = [];
+      lines.forEach((ln, i)=>{
+        if (!ln) return;
+        const key = onlyLetters(ln.replace(/[-·]/g,""));
+        if (EXCEPTIONS[key]) found.push({ key, i });
+      });
+
+      msg.innerHTML =
+        `${warnCount ? `<span style="color:#f59e0b;font-weight:800">${warnCount} warning(s)</span> (chunk has no vowel letters). ` : `<span style="color:#22c55e;font-weight:800">No failsafe warnings</span>. `}
+         ${found.length ? `Found <b>${found.length}</b> reduction word(s).` : `No reduction words detected in list.`}`;
+
+      // Make buttons for each found word
+      found.slice(0, 12).forEach(({key, i})=>{
+        const ex = EXCEPTIONS[key];
+        const label = key;
+        const makeBtn = (text, chunks) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = `${label}: ${text}`;
+          b.style.cssText =
+            "cursor:pointer;border-radius:999px;padding:8px 10px;border:1px solid rgba(56,189,248,.28);background:rgba(56,189,248,.08);color:rgba(238,242,255,.92);font-weight:800;";
+          b.onclick = ()=>{
+            ta.value = replaceLine(ta.value, i, chunks);
+            ta.dispatchEvent(new Event("input", { bubbles:true }));
+          };
+          return b;
+        };
+
+        if (ex.spelling) sug.appendChild(makeBtn("Use spelling", ex.spelling));
+        if (Array.isArray(ex.spoken)) {
+          ex.spoken.forEach(opt => sug.appendChild(makeBtn("Use spoken", opt)));
+        }
+      });
+    }
+
+    sanitizeBtn.onclick = ()=>{
+      const before = ta.value;
+      const after = sanitizeSeedText(before);
+      if (after && after !== before) {
+        ta.value = after;
+        ta.dispatchEvent(new Event("input", { bubbles:true }));
+      }
+    };
+
+    // Insert right after textarea
+    ta.insertAdjacentElement("afterend", host);
+
+    // Live update
+    let t = null;
+    ta.addEventListener("input", ()=>{
+      clearTimeout(t);
+      t = setTimeout(refresh, 120);
+    });
+    refresh();
+  }
+
+  // TTS fail-safe wrapper: if no vowel letters and short, speak letters spaced
+  function wrapSpeak(fnName){
+    const old = window[fnName];
+    if (typeof old !== "function") return;
+    if (old.__wordinessWrapped) return;
+
+    function wrapped(text, ...rest){
+      const t = String(text||"").trim();
+      if (t && !hasVowelLetters(t) && t.length <= 8) {
+        return old.call(this, lettersSpaced(t), ...rest);
+      }
+      return old.call(this, text, ...rest);
+    }
+    wrapped.__wordinessWrapped = true;
+    window[fnName] = wrapped;
+  }
+
+  // Try common TTS function names used across your games
+  ["speakNow","speak","speakText","say"].forEach(wrapSpeak);
+
+  // Seed sanitiser if game uses #seed=
+  function patchSeedFromHash(){
+    const h = String(location.hash||"");
+    if (!/seed=/.test(h)) return;
+    const ta = findSeedTextarea();
+    if (!ta) return;
+    const before = ta.value;
+    const after = sanitizeSeedText(before);
+    if (after && after !== before) {
+      ta.value = after;
+      ta.dispatchEvent(new Event("input", { bubbles:true }));
+    }
+  }
+
+  // Attach helpers on load
+  function boot(){
+    const ta = findSeedTextarea();
+    if (ta) attachHelperUI(ta);
+    patchSeedFromHash();
+  }
+
+  window.addEventListener("hashchange", ()=>setTimeout(patchSeedFromHash, 0));
+  setTimeout(boot, 80);
+
+})();
+</script>
+<!-- /WORDINESS_FAILSAFE_PATCH v1 -->
 </body>
 </html>
+

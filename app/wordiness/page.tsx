@@ -1,228 +1,237 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { buildWordinessSeedFromText } from "../_features/wordiness/buildWordinessSeed";
 
-type Game = { name: string; href: string; id: string };
-type ApiResponse = { files: Game[] };
+type Game = {
+  file: string;
+  title?: string;
+  desc?: string;
+  description?: string;
+  tags?: any; // <- intentionally loose, we normalize it
+  seedable?: boolean;
+  order?: any;
+};
 
-function titleFromId(id: string) {
-  // e.g. "wordiness-word-stress-dj-remix" -> "Word Stress DJ Remix"
-  const cleaned = id
-    .replace(/^wordiness-/, "")
-    .replace(/[-_]+/g, " ")
-    .trim();
-  return cleaned
-    .split(" ")
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-function downloadTextFile(filename: string, text: string) {
-  const blob = new Blob([text], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 400);
-}
-
-async function downloadRaw(url: string, filename: string) {
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to fetch: " + url);
-  const html = await res.text();
-  downloadTextFile(filename, html);
-}
-
-async function downloadSeededTemplate(opts: {
-  templateUrl: string;
-  filename: string;
-  seedText: string;
-}) {
-  const res = await fetch(opts.templateUrl, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to fetch template: " + opts.templateUrl);
-  let html = await res.text();
-
-  const seedJson = JSON.stringify(opts.seedText || "");
-
-  const inject = [
-    "<script>",
-    "(function(){",
-    "  try{",
-    "    var seed = " + seedJson + ";",
-    "    var ta = document.querySelector('#input');",
-    "    if(ta && seed && String(seed).trim()){",
-    "      ta.value = String(seed).replace(/\\r/g,'');",
-    "      if(typeof window.render === 'function') window.render();",
-    "      else if(typeof render === 'function') render();",
-    "    }",
-    "  }catch(e){}",
-    "})();",
-    "</script>",
-    ""
-  ].join("\\n");
-
-  if (html.includes("</body>")) html = html.replace("</body>", inject + "</body>");
-  else html += inject;
-
-  downloadTextFile(opts.filename, html);
-}
-
-export default function WordinessHub() {
-  const [games, setGames] = useState<Game[]>([]);
-  const [err, setErr] = useState<string>("");
-  const [seed, setSeed] = useState(
-    "re-spon-si-bi-li-ty\\n" +
-      "in-for-ma-tion\\n" +
-      "op-por-tu-ni-ty\\n" +
-      "dif-fi-cult\\n" +
-      "in-ter-est-ing\\n" +
-      "a-ma-zing"
+function b64UrlEncodeUtf8(s: string) {
+  const bytes = encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+    String.fromCharCode(parseInt(p1, 16))
   );
+  const b64 = btoa(bytes);
+  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function asStringArray(v: any): string[] {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.map((x) => String(x)).map((t) => t.trim()).filter(Boolean);
+
+  // common case: "grammar seeded" or "grammar,seeded"
+  if (typeof v === "string") {
+    return v
+      .split(/[,\n\r\t ]+/g)
+      .map((t) => t.trim())
+      .filter(Boolean);
+  }
+
+  // sometimes ConvertTo-Json / hand edits create objects
+  if (typeof v === "object") {
+    try {
+      return Object.values(v)
+        .map((x) => String(x))
+        .map((t) => t.trim())
+        .filter(Boolean);
+    } catch {
+      return [];
+    }
+  }
+
+  return [String(v)].map((t) => t.trim()).filter(Boolean);
+}
+
+function asNumber(v: any, fallback = 9999) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+export default function WordinessHubPage() {
+  const [games, setGames] = useState<Game[]>([]);
+  const [seedText, setSeedText] = useState("");
+  const [q, setQ] = useState("");
+  const [tag, setTag] = useState("");
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/wordiness", { cache: "no-store" });
-        const data = (await res.json()) as ApiResponse;
-        setGames(data.files || []);
-      } catch (e: any) {
-        setErr(e?.message || String(e));
-      }
-    })();
+    fetch("/wordiness/manifest.json?ts=" + Date.now())
+      .then((r) => r.json())
+      .then((data) => {
+        const arr: Game[] = Array.isArray(data) ? data : (data?.games ?? []);
+        // normalize minimally so the rest of the page is safe
+        const cleaned = (arr || []).filter(Boolean).map((g: any) => ({
+          ...g,
+          file: String(g.file || ""),
+          title: g.title ?? g.name ?? "",
+          desc: g.desc ?? g.description ?? "",
+          tags: asStringArray(g.tags),
+          seedable: !!g.seedable,
+          order: asNumber(g.order, 9999),
+        }));
+        setGames(cleaned.filter((g) => !!g.file));
+      })
+      .catch(() => setGames([]));
   }, []);
 
-  const seedHash = useMemo(() => {
-    const s = seed.trim();
-    return s ? "#seed=" + encodeURIComponent(s) : "";
-  }, [seed]);
+  const allTags = useMemo(() => {
+    const s = new Set<string>();
+    for (const g of games) {
+      for (const t of asStringArray((g as any).tags)) s.add(String(t));
+    }
+    return Array.from(s).sort((a, b) => a.localeCompare(b));
+  }, [games]);
 
-  function isSyllableGame(g: Game) {
-    const n = (g.id || "").toLowerCase();
-    return n.includes("syllable") && n.includes("tiles");
+  const filtered = useMemo(() => {
+    const qq = q.trim().toLowerCase();
+    return (games || [])
+      .filter((g) => g && g.file)
+      .filter((g) => (tag ? asStringArray(g.tags).includes(tag) : true))
+      .filter((g) => {
+        if (!qq) return true;
+        const hay = `${g.title || ""} ${g.file} ${g.desc || ""} ${asStringArray(g.tags).join(" ")}`.toLowerCase();
+        return hay.includes(qq);
+      })
+      .sort((a, b) => asNumber(a.order) - asNumber(b.order));
+  }, [games, q, tag]);
+
+  const seedHash = useMemo(() => {
+    if (!seedText.trim()) return "";
+    try {
+      const seedObj = buildWordinessSeedFromText(seedText);
+      return "#seed=" + b64UrlEncodeUtf8(JSON.stringify(seedObj));
+    } catch {
+      return "#seed=" + b64UrlEncodeUtf8(JSON.stringify({ seedText }));
+    }
+  }, [seedText]);
+
+  function launch(g: Game) {
+    const isSeededFile = /seeded\.(html|htm)$/i.test(g.file);
+    const wantsSeed = (!!g.seedable || isSeededFile) && !!seedHash;
+    const url = "/wordiness/" + g.file + (wantsSeed ? seedHash : "");
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   return (
-    <main style={{ maxWidth: 1050, margin: "0 auto", padding: 16, fontFamily: "system-ui" }}>
-      <h1 style={{ margin: "6px 0 6px" }}>Wordiness</h1>
-      <p style={{ margin: 0, opacity: 0.8 }}>
-        Your Wordiness games in <code>/public/wordiness</code>, now hooked into Aontas.
-      </p>
+    <div style={{ minHeight: "100vh", padding: 18, background: "linear-gradient(135deg, #dff1ff 0%, #fff5d6 100%)" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+          <img src="/wordiness/crest.png" alt="crest" style={{ width: 46, height: 46, objectFit: "contain" }} />
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 800 }}>Wordiness Hub</div>
+            <div style={{ opacity: 0.75, fontSize: 13 }}>
+              Launch Wordiness games. Seeded games use your Reading Pack text.
+            </div>
+          </div>
+          <div style={{ marginLeft: "auto", fontSize: 12, opacity: 0.7 }}>
+            Files found: <b>{games.length}</b>
+          </div>
+        </div>
 
-      <section
-        style={{
-          marginTop: 16,
-          border: "1px solid rgba(255,255,255,.14)",
-          borderRadius: 14,
-          padding: 14,
-        }}
-      >
-        <h2 style={{ margin: "0 0 8px" }}>Seed text (used by Syllable Tiles)</h2>
-        <p style={{ margin: "0 0 10px", opacity: 0.85 }}>
-          One word per line. Mark syllables with <b>-</b> or <b>·</b>.
-        </p>
-        <textarea
-          value={seed}
-          onChange={(e) => setSeed(e.target.value)}
-          rows={6}
+        <div
           style={{
-            width: "100%",
-            padding: 12,
-            borderRadius: 12,
-            border: "1px solid rgba(255,255,255,.14)",
-            background: "rgba(0,0,0,.20)",
-            color: "inherit",
+            background: "rgba(255,255,255,0.75)",
+            border: "1px solid rgba(0,0,0,0.08)",
+            borderRadius: 14,
+            padding: 14,
+            boxShadow: "0 10px 24px rgba(0,0,0,0.06)",
           }}
-        />
-      </section>
-
-      {err ? (
-        <p style={{ marginTop: 14, color: "#ff9090" }}>Error: {err}</p>
-      ) : null}
-
-      <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 12 }}>
-        {games.map((g) => {
-          const title = titleFromId(g.id);
-          const syllable = isSyllableGame(g);
-
-          return (
-            <div
-              key={g.name}
+        >
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Current seed</div>
+          <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8 }}>
+            Paste Reading Pack text here (optional). Seeded games open with #seed=... attached.
+          </div>
+          <textarea
+            value={seedText}
+            onChange={(e) => setSeedText(e.target.value)}
+            placeholder="Paste text from Reading Pack (optional)..."
+            style={{
+              width: "100%",
+              minHeight: 110,
+              borderRadius: 10,
+              border: "1px solid rgba(0,0,0,0.15)",
+              padding: 10,
+              fontSize: 14,
+              lineHeight: 1.35,
+            }}
+          />
+          <div style={{ display: "flex", gap: 10, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search games..."
+              style={{ flex: "1 1 260px", borderRadius: 999, border: "1px solid rgba(0,0,0,0.15)", padding: "10px 12px" }}
+            />
+            <select
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              style={{ flex: "0 0 220px", borderRadius: 999, border: "1px solid rgba(0,0,0,0.15)", padding: "10px 12px" }}
+            >
+              <option value="">All tags</option>
+              {allTags.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => setSeedText("")}
               style={{
-                border: "1px solid rgba(255,255,255,.14)",
-                borderRadius: 14,
-                padding: 14,
-                background: "rgba(0,0,0,.10)",
+                borderRadius: 999,
+                border: "1px solid rgba(0,0,0,0.12)",
+                padding: "10px 14px",
+                background: "white",
+                cursor: "pointer",
               }}
             >
-              <div style={{ fontWeight: 900, fontSize: 18 }}>{title}</div>
-              <div style={{ opacity: 0.75, fontSize: 13, marginTop: 6 }}>{g.name}</div>
+              Clear seed
+            </button>
+          </div>
+        </div>
 
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
-                <a
-                  href={g.href + (syllable ? seedHash : "")}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,.14)",
-                    textDecoration: "none",
-                    color: "inherit",
-                  }}
-                >
-                  Open
-                </a>
-
-                {syllable ? (
-                  <button
-                    onClick={() =>
-                      downloadSeededTemplate({
-                        templateUrl: g.href,
-                        filename: g.name.replace(/\.(html|htm)$/i, "") + "-seeded.html",
-                        seedText: seed,
-                      })
-                    }
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: 12,
-                      border: "1px solid rgba(56,189,248,.40)",
-                      background: "rgba(56,189,248,.12)",
-                      color: "inherit",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Download seeded
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => downloadRaw(g.href, g.name)}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: 12,
-                      border: "1px solid rgba(255,255,255,.14)",
-                      background: "rgba(255,255,255,.04)",
-                      color: "inherit",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Download
-                  </button>
-                )}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14, marginTop: 14 }}>
+          {filtered.map((g) => (
+            <div
+              key={g.file}
+              style={{
+                background: "rgba(255,255,255,0.85)",
+                border: "1px solid rgba(0,0,0,0.08)",
+                borderRadius: 16,
+                padding: 14,
+                boxShadow: "0 10px 22px rgba(0,0,0,0.05)",
+              }}
+            >
+              <div style={{ fontWeight: 800, marginBottom: 4 }}>{g.title || g.file}</div>
+              <div style={{ fontSize: 12, opacity: 0.75, minHeight: 32 }}>{g.desc || ""}</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                {asStringArray(g.tags).slice(0, 8).map((t) => (
+                  <span key={t} style={{ fontSize: 11, padding: "4px 8px", borderRadius: 999, background: "rgba(0,0,0,0.06)" }}>
+                    {t}
+                  </span>
+                ))}
               </div>
-
-              {syllable ? (
-                <div style={{ marginTop: 10, opacity: 0.75, fontSize: 13 }}>
-                  This one gets seeded via <code>#seed=...</code> (Open) or embedded (Download seeded).
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12 }}>
+                <button
+                  onClick={() => launch(g)}
+                  style={{ borderRadius: 999, border: "1px solid rgba(0,0,0,0.12)", padding: "10px 14px", background: "white", cursor: "pointer" }}
+                >
+                  Launch
+                </button>
+                <div style={{ fontSize: 11, opacity: 0.6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {g.file}
                 </div>
-              ) : null}
+              </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        <div style={{ marginTop: 14, fontSize: 12, opacity: 0.7 }}>Seeded games read a #seed=... hash.</div>
       </div>
-    </main>
+    </div>
   );
 }

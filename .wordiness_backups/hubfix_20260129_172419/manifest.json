@@ -1,0 +1,13 @@
+{
+    "file":  "syllable-tiles.html",
+    "title":  "Syllable Tiles",
+    "desc":  "Chunk and blend words using syllable tiles + TTS.",
+    "tags":  [
+                 "syllables",
+                 "phonics",
+                 "tts",
+                 "classroom"
+             ],
+    "seedable":  false,
+    "order":  100
+}

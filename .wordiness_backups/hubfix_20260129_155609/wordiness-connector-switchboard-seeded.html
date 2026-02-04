@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Wordiness - Connector Switchboard (Seeded)</title>
+<style>
+:root{--bg:#070b12;--card:rgba(255,255,255,.06);--text:#e9eefb;--muted:rgba(233,238,251,.72);--line:rgba(255,255,255,.12);--accent:#5ee7ff;--good:#35d07f;--bad:#ff5d7a;--r:18px}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:radial-gradient(900px 650px at 20% 10%,rgba(94,231,255,.18),transparent 55%),radial-gradient(900px 650px at 80% 30%,rgba(53,208,127,.16),transparent 55%),var(--bg);color:var(--text)}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 14px 42px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.brand{display:flex;gap:10px;align-items:center}
+.brand img{width:34px;height:34px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,.18)}
+.h1{font-weight:900}
+.sub{font-size:13px;color:var(--muted);margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.hd{padding:16px;border-bottom:1px solid rgba(255,255,255,.10);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.bd{padding:16px}
+.hint{font-size:13px;color:var(--muted);line-height:1.35}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.chip{padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);font-size:13px}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:12px 14px;font-size:14px}
+button.primary{border-color:rgba(94,231,255,.35);background:linear-gradient(180deg,rgba(94,231,255,.18),rgba(94,231,255,.08));font-weight:900}
+.slotrow{display:flex;gap:10px;flex-wrap:wrap;min-height:56px;align-items:center}
+.slot{min-width:120px;min-height:52px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.14);font-weight:900;display:flex;align-items:center;justify-content:center}
+.slot.left,.slot.right{justify-content:flex-start}
+.tilewrap{display:flex;flex-wrap:wrap;gap:10px}
+.tile{min-height:44px;border-radius:14px;padding:12px 14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);font-weight:900}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;max-width:92vw;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.18);padding:12px 14px;border-radius:14px;display:none}
+.toast.show{display:block}
+.small{font-size:12px;color:var(--muted);margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <img src="crest.png" onerror="this.style.display='none'">
+      <div>
+        <div class="h1">Connector Switchboard (Seeded)</div>
+        <div class="sub">Choose the connector that best links the two parts.</div>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="chip">Score <b id="score">0</b></div>
+      <div class="chip">Round <b id="round">0</b></div>
+      <div class="chip" id="typeChip">-</div>
+      <button id="ttsBtn" type="button">TTS: On</button>
+      <button id="stopBtn" type="button">Stop</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="hd">
+        <div class="hint"><b>Goal:</b> Pick the best connector (because / but / so / when / if / although / then).</div>
+      </div>
+      <div class="bd">
+        <div class="slotrow" id="parts"></div>
+        <div class="btnrow">
+          <button class="primary" id="startBtn" type="button">Start</button>
+          <button id="checkBtn" type="button">Check</button>
+          <button id="hearBtn" type="button">Hear</button>
+          <button id="nextBtn" type="button">Next</button>
+        </div>
+        <div class="small" id="seedInfo"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <div class="hint"><b>Choices:</b> Tap one.</div>
+      </div>
+      <div class="bd">
+        <div class="tilewrap" id="choices"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<script src="wordiness-seed-bridge.js"></script>
+<script>
+(function(){
+  var tts = (localStorage.getItem("wordiness_tts") || "1")==="1";
+  function qs(s){ return document.querySelector(s); }
+  function toast(msg,kind){
+    var el=qs("#toast"); el.textContent=msg;
+    el.style.borderColor = kind==="good" ? "rgba(53,208,127,.45)" : kind==="bad" ? "rgba(255,93,122,.45)" : "rgba(255,255,255,.18)";
+    el.classList.add("show"); clearTimeout(toast._t);
+    toast._t=setTimeout(function(){el.classList.remove("show");},1500);
+  }
+  function speak(txt, slow){
+    try{
+      if(!tts) return;
+      if(!("speechSynthesis" in window)) return;
+      var u=new SpeechSynthesisUtterance(String(txt||""));
+      u.rate = slow ? 0.82 : 1.0;
+      speechSynthesis.cancel();
+      setTimeout(function(){speechSynthesis.speak(u);},30);
+    }catch(e){}
+  }
+  function stopSpeak(){ try{ if("speechSynthesis" in window) speechSynthesis.cancel(); }catch(e){} }
+
+  qs("#ttsBtn").textContent = "TTS: " + (tts ? "On" : "Off");
+  qs("#ttsBtn").onclick=function(){
+    tts=!tts; localStorage.setItem("wordiness_tts", tts ? "1" : "0");
+    qs("#ttsBtn").textContent="TTS: " + (tts ? "On" : "Off");
+    toast(tts ? "TTS on" : "TTS off");
+  };
+  qs("#stopBtn").onclick=function(){ stopSpeak(); toast("Stopped"); };
+
+  var seed = (window.__WORDINESS_SEED_BRIDGE__ && window.__WORDINESS_SEED_BRIDGE__.getSeed) ? window.__WORDINESS_SEED_BRIDGE__.getSeed() : null;
+
+  var fallback = [
+    {sentence:"I wore a coat because it was cold.", connector:"because"},
+    {sentence:"I wanted to go but I was too tired.", connector:"but"},
+    {sentence:"We packed our bags then we left early.", connector:"then"},
+    {sentence:"We will start when everyone is ready.", connector:"when"},
+    {sentence:"We can play outside if it stops raining.", connector:"if"},
+    {sentence:"She practised so she improved.", connector:"so"},
+    {sentence:"He smiled although he was nervous.", connector:"although"}
+  ];
+
+  var items = (seed && seed.structures && seed.structures.connectors && seed.structures.connectors.length)
+    ? seed.structures.connectors.slice(0)
+    : fallback;
+
+  var bank = ["because","but","so","when","if","although","then","and"];
+
+  function typeOf(w){
+    if(w==="because"||w==="so") return "cause";
+    if(w==="but"||w==="although") return "contrast";
+    if(w==="when"||w==="then") return "time";
+    if(w==="if") return "condition";
+    return "other";
+  }
+
+  function splitSentence(s, con){
+    var low = s.toLowerCase();
+    var idx = low.indexOf(" " + con + " ");
+    if(idx<0) idx = low.indexOf(con);
+    if(idx<0) return null;
+    var left = s.slice(0, idx).trim().replace(/[,\s]+$/,"").trim();
+    var right = s.slice(idx + con.length).trim().replace(/^[,\s]+/,"").replace(/[.]+$/,"").trim();
+    if(!left || !right) return null;
+    return {left:left, right:right};
+  }
+
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+
+  var current=null, chosen=null, score=0, round=0, started=false;
+
+  function pick(){
+    for(var t=0;t<40;t++){
+      var it = items[Math.floor(Math.random()*items.length)];
+      var con = String(it.connector||"").toLowerCase();
+      var s = String(it.sentence||it||"");
+      if(!con || !s) continue;
+      var parts = splitSentence(s, con);
+      if(parts){
+        current = { left: parts.left, right: parts.right, ans: con, type: typeOf(con) };
+        return;
+      }
+    }
+    var fb = fallback[0];
+    var p = splitSentence(fb.sentence, fb.connector);
+    current = { left:p.left, right:p.right, ans: fb.connector, type:typeOf(fb.connector) };
+  }
+
+  function options(){
+    var ans = current.ans;
+    var mode = (localStorage.getItem("wordiness_mode") || "supported");
+    if(mode==="standard") return shuffle(bank.slice(0));
+    var same = bank.filter(function(w){ return w!==ans && typeOf(w)===current.type; }).slice(0,1);
+    var other = bank.filter(function(w){ return typeOf(w)!==current.type && w!==ans; }).slice(0,2);
+    return shuffle([ans].concat(same).concat(other));
+  }
+
+  function render(){
+    qs("#score").textContent=String(score);
+    qs("#round").textContent=String(round);
+    qs("#seedInfo").textContent = (seed && seed.sentences && seed.sentences.length) ? "Seeded from Reading Pack" : "Using built-in examples";
+    qs("#typeChip").textContent = current ? current.type : "-";
+
+    var parts=qs("#parts"); parts.innerHTML="";
+    if(!current){
+      var z=document.createElement("div"); z.className="slot"; z.textContent="Press Start"; parts.appendChild(z);
+      return;
+    }
+    var a=document.createElement("div"); a.className="slot left"; a.textContent=current.left;
+    var b=document.createElement("div"); b.className="slot"; b.textContent=chosen || "____";
+    var c=document.createElement("div"); c.className="slot right"; c.textContent=current.right;
+    parts.appendChild(a); parts.appendChild(b); parts.appendChild(c);
+
+    var ch=qs("#choices"); ch.innerHTML="";
+    options().forEach(function(w){
+      var btn=document.createElement("button");
+      btn.type="button"; btn.className="tile"; btn.textContent=w;
+      btn.onclick=function(){ chosen=w; speak(w,false); render(); };
+      ch.appendChild(btn);
+    });
+  }
+
+  function start(){
+    started=true; chosen=null; pick(); round++; toast("Round started","good"); render();
+  }
+
+  function check(){
+    if(!started){ toast("Press Start"); return; }
+    if(!chosen){ toast("Pick a connector","bad"); return; }
+    if(chosen===current.ans){
+      score+=10; toast("Correct!","good"); speak("Correct",false); start();
+    } else {
+      score=Math.max(0,score-1); toast("Try again","bad"); speak("Try again",true); render();
+    }
+  }
+
+  qs("#startBtn").onclick=start;
+  qs("#nextBtn").onclick=start;
+  qs("#checkBtn").onclick=check;
+  qs("#hearBtn").onclick=function(){
+    if(!current) return;
+    var conn = chosen || current.ans;
+    speak(current.left + " " + conn + " " + current.right, false);
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

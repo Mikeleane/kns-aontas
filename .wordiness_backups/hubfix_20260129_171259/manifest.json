@@ -1,0 +1,268 @@
+[
+    {
+        "file":  "wordiness-syllable-tiles.html",
+        "title":  "Syllable Tiles",
+        "desc":  "Chunk and blend words using syllable tiles + TTS.",
+        "tags":  [
+                     "syllables",
+                     "phonics",
+                     "mix",
+                     "classroom",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  100
+    },
+    {
+        "file":  "syllable-tiles.html",
+        "title":  "Syllable Tiles",
+        "desc":  "Chunk and blend words using syllable tiles + TTS.",
+        "tags":  [
+                     "syllables",
+                     "phonics",
+                     "tts",
+                     "classroom"
+                 ],
+        "seedable":  false,
+        "order":  100
+    },
+    {
+        "file":  "wordiness-calm-spell-lab.htm",
+        "title":  "Calm Spell Lab",
+        "desc":  "Low-pressure spelling practice with calming pacing.",
+        "tags":  [
+                     "spelling",
+                     "regulation",
+                     "mix",
+                     "classroom",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  200
+    },
+    {
+        "file":  "wordiness-lab-shapes-sounds.html",
+        "title":  "Shapes \u0026 Sounds Lab",
+        "desc":  "Play with sounds: rhyme radar, syllable shuffle, and sound shapes (phonological awareness).",
+        "tags":  [
+                     "phonological-awareness",
+                     "rhyme",
+                     "syllables",
+                     "tts",
+                     "classroom"
+                 ],
+        "seedable":  false,
+        "order":  200
+    },
+    {
+        "file":  "wordiness-morpheme-lego.htm",
+        "title":  "Morpheme Lego",
+        "desc":  "Snap prefixes, roots, and suffixes to build meaning.",
+        "tags":  [
+                     "morphology",
+                     "word-building",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  300
+    },
+    {
+        "file":  "wordiness-morpheme-mixer.htm",
+        "title":  "Morpheme Mixer",
+        "desc":  "Snap prefixes, roots, and suffixes to build meaning.",
+        "tags":  [
+                     "morphology",
+                     "word-building",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  300
+    },
+    {
+        "file":  "wordiness-word-stress-dj.htm",
+        "title":  "Word Stress DJ",
+        "desc":  "Feel the beat of word stress patterns (prosody practice).",
+        "tags":  [
+                     "stress",
+                     "pronunciation",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  400
+    },
+    {
+        "file":  "wordiness-word-stress-dj-remix.htm",
+        "title":  "Word Stress DJ Remix",
+        "desc":  "Feel the beat of word stress patterns (prosody practice).",
+        "tags":  [
+                     "stress",
+                     "pronunciation",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  400
+    },
+    {
+        "title":  "Working Memory Relay",
+        "desc":  "Memorise a word list, then rebuild it from tiles. Supported mode gives more time and fewer words.",
+        "file":  "wordiness-working-memory-relay.html",
+        "tags":  [
+                     "executive-function",
+                     "working-memory",
+                     "dyslexia-friendly",
+                     "tts"
+                 ],
+        "seedable":  true
+    },
+    {
+        "file":  "wordiness-focus-finder.htm",
+        "title":  "Focus Finder",
+        "desc":  "Find the target quicklyâ€”gentle focus training with language.",
+        "tags":  [
+                     "attention",
+                     "executive-function",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  1003
+    },
+    {
+        "title":  "Syllable Tiles (Smart)",
+        "desc":  "Chunk + blend with failsafe warnings and spoken-vs-spelling options (different/vegetable/factory…).",
+        "file":  "syllable-tiles-smart.html",
+        "tags":  [
+                     "syllables",
+                     "phonics",
+                     "dyslexia-friendly",
+                     "speech",
+                     "tts"
+                 ],
+        "seedable":  true
+    },
+    {
+        "file":  "wordiness-next-tiny-step-builder.html",
+        "title":  "Next Tiny Step Builder",
+        "desc":  "Turn a big task into Now/Next/Later micro-steps. Includes Make Smaller + Focus mode.",
+        "tags":  [
+                     "executive-function",
+                     "planning",
+                     "initiation",
+                     "working-memory",
+                     "dyslexia-friendly",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  520
+    },
+    {
+        "file":  "wordiness-focus-confusables-pbdq.html",
+        "title":  "Confusables Hunt (p/b/d/q)",
+        "desc":  "Tap words containing p, b, d, or q. Fast scanning and letter awareness.",
+        "description":  "Tap words containing p, b, d, or q. Fast scanning and letter awareness.",
+        "tags":  [
+                     "focus",
+                     "dyslexia-friendly",
+                     "letter-awareness",
+                     "executive-function",
+                     "tts"
+                 ],
+        "seedable":  false,
+        "order":  1100
+    },
+    {
+        "file":  "wordiness-focus-order-finder.html",
+        "title":  "Order Finder (letter combos)",
+        "desc":  "Tap words where the pattern letters appear in order (or exact mode).",
+        "description":  "Tap words where the pattern letters appear in order (or exact mode).",
+        "tags":  [
+                     "focus",
+                     "sequencing",
+                     "executive-function",
+                     "phonics",
+                     "tts"
+                 ],
+        "seedable":  true,
+        "order":  1110
+    },
+    {
+        "order":  1200,
+        "tags":  [
+                     "grammar",
+                     "parts-of-speech",
+                     "sentence-structure",
+                     "tts"
+                 ],
+        "desc":  "Tap-to-build sentences (structure + parts of speech).",
+        "seedable":  false,
+        "title":  "Sentence Builder Studio",
+        "file":  "wordiness-sentence-builder-studio.html"
+    },
+    {
+        "order":  1210,
+        "tags":  [
+                     "grammar",
+                     "connectors",
+                     "cohesion",
+                     "tts"
+                 ],
+        "desc":  "Choose connectors (because/but/so/when/if) to link ideas.",
+        "seedable":  false,
+        "title":  "Connector Switchboard",
+        "file":  "wordiness-connector-switchboard.html"
+    },
+    {
+        "order":  1220,
+        "tags":  [
+                     "grammar",
+                     "parts-of-speech",
+                     "attention",
+                     "tts"
+                 ],
+        "desc":  "Tap the words that match the target (verbs/nouns/adjectives/adverbs).",
+        "seedable":  false,
+        "title":  "Parts of Speech Spotlight",
+        "file":  "wordiness-parts-of-speech-spotlight.html"
+    },
+    {
+        "order":  1300,
+        "tags":  [
+                     "grammar",
+                     "word-order",
+                     "sentence-structure",
+                     "tts",
+                     "seeded"
+                 ],
+        "desc":  "Rebuild Reading Pack sentences in the correct order.",
+        "seedable":  true,
+        "title":  "Word Order Rails",
+        "file":  "wordiness-word-order-rails.html"
+    },
+    {
+        "order":  1310,
+        "tags":  [
+                     "grammar",
+                     "connectors",
+                     "cohesion",
+                     "tts",
+                     "seeded"
+                 ],
+        "desc":  "Choose connectors from Reading Pack sentences.",
+        "seedable":  true,
+        "title":  "Connector Switchboard (Seeded)",
+        "file":  "wordiness-connector-switchboard-seeded.html"
+    },
+    {
+        "order":  1320,
+        "tags":  [
+                     "grammar",
+                     "questions",
+                     "wh-words",
+                     "tts",
+                     "seeded"
+                 ],
+        "desc":  "Match answers to why/when/where/who/what using Reading Pack clues.",
+        "seedable":  true,
+        "title":  "WH Question Picker",
+        "file":  "wordiness-wh-question-picker.html"
+    }
+]
