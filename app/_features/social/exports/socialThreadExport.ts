@@ -45,6 +45,16 @@ export type SocialThreadPack = {
 };
 
 export type ExportHtmlOptions = {
+  // Defaults for exported Social Thread HTML
+  defaultLens?: string;                 // e.g. "builder" | "debate"
+  defaultAutoVoices?: boolean;
+  defaultSpeakEmojis?: boolean;
+  defaultShowEmojis?: boolean;
+  defaultPace?: "all" | "step" | string;
+  initialVisibleCount?: number;
+
+  // Allow forward-compatible options without breaking builds
+  [key: string]: any;
   defaultLens?: string; // e.g. "builder" | "debate"
   defaultVariant?: "standard" | "supported";
   defaultPace?: "step" | "all";
@@ -1150,4 +1160,5 @@ function escapeHtml(s: string) {
 function escapeAttr(s: string) {
   return escapeHtml(s).replace(/[\x60]/g, "&#96;");
 }
+
 
