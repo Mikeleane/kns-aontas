@@ -56,11 +56,7 @@ export type ExportHtmlOptions = {
   // Allow forward-compatible options without breaking builds
   [key: string]: any;
   defaultVariant?: "standard" | "supported";
-  defaultPace?: "step" | "all";
-  initialVisibleCount?: number;
   defaultStage?: 1 | 2 | 3 | 4;
-  defaultShowEmojis?: boolean;
-  defaultSpeakEmojis?: boolean;
 };
 
 export type ExportOpts = {
