@@ -34,7 +34,9 @@ function splitSentences(text: string): string[] {
 }
 
 function countWords(s: string) {
-  const m = String(s || "").match(/[A-Za-zÃ€-Ã–Ã˜-Ã¶Ã¸-Ã¿0-9']+/g);
+  // Unicode-safe: letters + combining marks + numbers + apostrophe
+  // \u0027 is a plain apostrophe (')
+  const m = String(s || "").match(/[\p{L}\p{M}\p{N}\u0027]+/gu);
   return m ? m.length : 0;
 }
 
@@ -245,4 +247,5 @@ export async function POST(req: Request) {
     );
   }
 }
+
 
