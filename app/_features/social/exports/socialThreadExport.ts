@@ -55,7 +55,6 @@ export type ExportHtmlOptions = {
 
   // Allow forward-compatible options without breaking builds
   [key: string]: any;
-  defaultLens?: string; // e.g. "builder" | "debate"
   defaultVariant?: "standard" | "supported";
   defaultPace?: "step" | "all";
   initialVisibleCount?: number;
