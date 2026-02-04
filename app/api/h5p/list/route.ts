@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const root = path.join(process.cwd(), "public", "h5p");
+  const root = (process.env.H5P_ROOT ?? "");
 
   try {
     const dirents = await fs.readdir(root, { withFileTypes: true });
@@ -40,3 +40,4 @@ export async function GET() {
     );
   }
 }
+

@@ -513,7 +513,7 @@ function SyllableGameView(props: { games: SyllableGame[]; fontSizePx: number; vo
         <button type="button" onClick={() => setIdx((n) => Math.max(0, n - 1))} style={miniBtnStyle}>
           Prev
         </button>
-        <button type="button" onClick={() => setIdx((n) => Math.min(games.length - 1, n + 1))} style={miniBtnStyle}>
+        <button type="button" onClick={() => setIdx((n) => Math.min(props.games.length - 1, n + 1))} style={miniBtnStyle}>
           Next
         </button>
         <button type="button" onClick={() => speakText(g.word, props.voice, 0.95, 1)} style={miniBtnStyleStrong}>
@@ -851,4 +851,5 @@ export default function InAppActivities(props: { pack: ReadingPackData; mode: Re
     </div>
   );
 }
+
 

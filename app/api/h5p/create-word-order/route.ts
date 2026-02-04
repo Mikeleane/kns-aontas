@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
 import { existsSync } from "fs";
@@ -29,12 +29,12 @@ function safeId(raw: string) {
 function splitSentences(text: string): string[] {
   const t = String(text || "").replace(/\s+/g, " ").trim();
   if (!t) return [];
-  // Simple sentence split – good enough for MVP
+  // Simple sentence split â€“ good enough for MVP
   return t.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
 }
 
 function countWords(s: string) {
-  const m = String(s || "").match(/[A-Za-zÀ-ÖØ-öø-ÿ0-9']+/g);
+  const m = String(s || "").match(/[A-Za-zÃ€-Ã–Ã˜-Ã¶Ã¸-Ã¿0-9']+/g);
   return m ? m.length : 0;
 }
 
@@ -50,7 +50,7 @@ function pickSentences(text: string, stage: number, max = 8): string[] {
     const w = countWords(s);
     if (w < minW || w > maxW) return false;
     // avoid super-short fragments or weird punctuation-only lines
-    if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(s)) return false;
+    if (!/[A-Za-zÃ€-Ã–Ã˜-Ã¶Ã¸-Ã¿]/.test(s)) return false;
     return true;
   });
 
@@ -73,17 +73,17 @@ function pickSentences(text: string, stage: number, max = 8): string[] {
 function wrapEveryWord(sentence: string) {
   // Wrap word tokens in *...* so DragText makes them draggable+blank.
   // Keep punctuation outside.
-  return sentence.replace(/\b([A-Za-zÀ-ÖØ-öø-ÿ0-9']+)\b/g, "*$1*");
+  return sentence.replace(/\b([A-Za-zÃ€-Ã–Ã˜-Ã¶Ã¸-Ã¿0-9']+)\b/g, "*$1*");
 }
 
 function buildDragTextParams(textField: string) {
   return {
     taskDescription:
-      "<p><strong>Drag the words into the correct order.</strong></p>\n<p>Tip: read the whole sentence first, then build it left → right.</p>\n",
+      "<p><strong>Drag the words into the correct order.</strong></p>\n<p>Tip: read the whole sentence first, then build it left â†’ right.</p>\n",
     overallFeedback: [
-      { from: 0, to: 50, feedback: "Have another go — focus on the first word and punctuation clues." },
+      { from: 0, to: 50, feedback: "Have another go â€” focus on the first word and punctuation clues." },
       { from: 51, to: 85, feedback: "Nearly there. Check word order and small grammar words." },
-      { from: 86, to: 100, feedback: "Excellent — clean word order!" },
+      { from: 86, to: 100, feedback: "Excellent â€” clean word order!" },
     ],
     checkAnswer: "Check",
     tryAgain: "Try again",
@@ -156,7 +156,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing readingText" }, { status: 400 });
     }
 
-    const templateDir = path.join(process.cwd(), "public", "h5p", "_templates", "dragtext");
+    const templateDir = path.join((process.env.H5P_ROOT ?? ""), "_templates", "dragtext");
     const templateLibDir = path.join(templateDir, "libraries");
     if (!existsSync(templateDir) || !existsSync(templateLibDir)) {
       return NextResponse.json(
@@ -174,12 +174,12 @@ export async function POST(req: Request) {
     const id =
       safeId(body.id || `${baseTitle}-word-order-${Date.now().toString(36)}`);
 
-    const outDir = path.join(process.cwd(), "public", "h5p", id);
+    const outDir = path.join((process.env.H5P_WRITE_ROOT ?? (process.env.H5P_ROOT ?? "")), id);
     if (existsSync(outDir)) {
       return NextResponse.json({ error: `H5P id already exists: ${id}` }, { status: 409 });
     }
 
-    // Copy template → new folder
+    // Copy template â†’ new folder
     await fs.cp(templateDir, outDir, { recursive: true });
 
     // Build content from reading text
@@ -214,7 +214,7 @@ export async function POST(req: Request) {
       library: libraryString,
       params,
       metadata: {
-        title: `${baseTitle} — Word order`,
+        title: `${baseTitle} â€” Word order`,
         license: "U",
         defaultLanguage: "en",
       },
@@ -228,7 +228,7 @@ export async function POST(req: Request) {
     );
 
     const h5pJson = {
-      title: `${baseTitle} — Word order`,
+      title: `${baseTitle} â€” Word order`,
       language: "en",
       mainLibrary,
       embedTypes: ["div"],
@@ -245,3 +245,4 @@ export async function POST(req: Request) {
     );
   }
 }
+
