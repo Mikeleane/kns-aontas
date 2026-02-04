@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
@@ -28,6 +28,9 @@ export type TeacherMaterial = {
 };
 
 export type CurriculumTarget = {
+  // Pilot mode: warn about potential copyright limits; outputs for internal/pilot use
+  pilotMode?: boolean;
+
   classLevel?: number;
   stage?: number;
 
@@ -102,7 +105,7 @@ function scanHeadsUp(text: string) {
   const eircode = t.match(/\b([AC-FHKNPRTV-Y]\d{2}|D6W)\s?[0-9AC-FHKNPRTV-Y]{4}\b/gi);
   if (eircode?.length) hits.push({ label: "Eircode-like code(s) detected", sample: eircode.slice(0, 2).join(", ") });
 
-  // Gentle “proper noun clusters” (not perfect, just a nudge)
+  // Gentle â€œproper noun clustersâ€ (not perfect, just a nudge)
   const proper = t.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b/g);
   if (proper?.length) hits.push({ label: "Potential names/places detected", sample: proper.slice(0, 2).join(", ") });
 
@@ -248,7 +251,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
       id: uid(),
       kind: "text",
       title: "Pasted text",
-      sourceLabel: `${txt.split(/\s+/).slice(0, 6).join(" ")}…`,
+      sourceLabel: `${txt.split(/\s+/).slice(0, 6).join(" ")}â€¦`,
       createdAt: Date.now(),
       text: txt,
       extractedText: txt, // for text, extraction = the text itself
@@ -421,7 +424,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
         <div style={{ ...styles.card, marginTop: 14, borderColor: "rgba(180,83,9,.35)", background: "#fff7ed" }}>
           <div style={{ fontWeight: 950, marginBottom: 6, color: "#7c2d12" }}>Heads-up review</div>
           <div style={{ color: "#7c2d12", fontSize: 12 }}>
-            I spotted a few things that *might* be identifiers (not necessarily a problem — just a quick sanity check).
+            I spotted a few things that *might* be identifiers (not necessarily a problem â€” just a quick sanity check).
           </div>
           <ul style={{ margin: "10px 0 0", paddingLeft: 18, color: "#7c2d12", fontSize: 12 }}>
             {headsUpHits.map((h, i) => (
@@ -467,7 +470,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                 <input
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="Paste a URL…"
+                  placeholder="Paste a URLâ€¦"
                   style={{
                     flex: 1,
                     minWidth: 240,
@@ -516,7 +519,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                 id="a10_textpaste"
                 value={textPaste}
                 onChange={(e) => setTextPaste(e.target.value)}
-                placeholder="Paste your text here (or type)…"
+                placeholder="Paste your text here (or type)â€¦"
                 style={{
                   width: "100%",
                   minHeight: 120,
@@ -569,7 +572,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                       )}
                     </div>
                     <div style={{ color: "#64748b", fontSize: 12, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {m.kind.toUpperCase()} • {m.sourceLabel || m.fileName || "—"} {m.sizeBytes ? `• ${humanSize(m.sizeBytes)}` : ""}
+                      {m.kind.toUpperCase()} â€¢ {m.sourceLabel || m.fileName || "â€”"} {m.sizeBytes ? `â€¢ ${humanSize(m.sizeBytes)}` : ""}
                     </div>
                   </div>
 
@@ -628,7 +631,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                   if (!primary) return;
                   setMaterials((prev) => prev.map((m) => (m.id === primary.id ? { ...m, extractedText: val } : m)));
                 }}
-                placeholder="Paste / edit the text the class will work from…"
+                placeholder="Paste / edit the text the class will work fromâ€¦"
                 style={{
                   width: "100%",
                   minHeight: 180,
@@ -649,7 +652,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                   Generate from inputs
                 </button>
                 <div style={{ fontSize: 12, color: "#64748b" }}>
-                  {canGenerate ? "Ready." : "Add a Primary material and make sure the text box isn’t empty."}
+                  {canGenerate ? "Ready." : "Add a Primary material and make sure the text box isnâ€™t empty."}
                 </div>
               </div>
             </div>
@@ -695,10 +698,10 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
               <label style={{ fontSize: 12, fontWeight: 900, color: "#475569" }}>
                 Genre / Form
                 <input
-                  value={`${curriculum.genre ?? ""}${curriculum.form ? ` • ${curriculum.form}` : ""}`.trim()}
+                  value={`${curriculum.genre ?? ""}${curriculum.form ? ` â€¢ ${curriculum.form}` : ""}`.trim()}
                   onChange={(e) => {
                     const v = e.target.value;
-                    const parts = v.split("•").map((x) => x.trim());
+                    const parts = v.split("â€¢").map((x) => x.trim());
                     setCurriculum((c) => ({ ...c, genre: parts[0] || c.genre, form: parts[1] || c.form }));
                   }}
                   style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 12, border: "1px solid rgba(15,23,42,.16)" }}
@@ -732,7 +735,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
 
               <label style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 12, color: "#334155", fontWeight: 900 }}>
                 <input type="checkbox" checked={onlyUseProvidedFacts} onChange={(e) => setOnlyUseProvidedFacts(e.target.checked)} />
-                Only use provided facts (don’t invent local details)
+                Only use provided facts (donâ€™t invent local details)
               </label>
 
               <label style={{ fontSize: 12, fontWeight: 900, color: "#475569" }}>
@@ -740,7 +743,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                 <textarea
                   value={contextTagsRaw}
                   onChange={(e) => setContextTagsRaw(e.target.value)}
-                  placeholder="e.g. local history, health promotion, GAA, environment…"
+                  placeholder="e.g. local history, health promotion, GAA, environmentâ€¦"
                   style={{ width: "100%", marginTop: 6, minHeight: 70, padding: 10, borderRadius: 12, border: "1px solid rgba(15,23,42,.16)" }}
                 />
               </label>
@@ -750,7 +753,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                 <textarea
                   value={crossLinksRaw}
                   onChange={(e) => setCrossLinksRaw(e.target.value)}
-                  placeholder="e.g. Geography, SPHE, Science…"
+                  placeholder="e.g. Geography, SPHE, Scienceâ€¦"
                   style={{ width: "100%", marginTop: 6, minHeight: 70, padding: 10, borderRadius: 12, border: "1px solid rgba(15,23,42,.16)" }}
                 />
               </label>
@@ -760,7 +763,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                 <textarea
                   value={authTypesRaw}
                   onChange={(e) => setAuthTypesRaw(e.target.value)}
-                  placeholder="e.g. poster, leaflet, article, announcement, timetable…"
+                  placeholder="e.g. poster, leaflet, article, announcement, timetableâ€¦"
                   style={{ width: "100%", marginTop: 6, minHeight: 70, padding: 10, borderRadius: 12, border: "1px solid rgba(15,23,42,.16)" }}
                 />
               </label>
@@ -770,7 +773,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                 <textarea
                   value={vocabRaw}
                   onChange={(e) => setVocabRaw(e.target.value)}
-                  placeholder="e.g. (local place names), key terms, Irish words…"
+                  placeholder="e.g. (local place names), key terms, Irish wordsâ€¦"
                   style={{ width: "100%", marginTop: 6, minHeight: 70, padding: 10, borderRadius: 12, border: "1px solid rgba(15,23,42,.16)" }}
                 />
               </label>
@@ -780,7 +783,7 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
                 <textarea
                   value={glossaryRaw}
                   onChange={(e) => setGlossaryRaw(e.target.value)}
-                  placeholder="e.g. ember: a small piece of burning wood…"
+                  placeholder="e.g. ember: a small piece of burning woodâ€¦"
                   style={{ width: "100%", marginTop: 6, minHeight: 90, padding: 10, borderRadius: 12, border: "1px solid rgba(15,23,42,.16)" }}
                 />
               </label>
@@ -799,3 +802,4 @@ export default function TeacherInputsPanel({ onGenerate }: Props) {
     </div>
   );
 }
+
