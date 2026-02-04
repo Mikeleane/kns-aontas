@@ -65,6 +65,14 @@ export type ExportHtmlOptions = {
 };
 
 export type ExportOpts = {
+  // Precompute options for offline/social-thread exports
+  precomputeUnpacks?: boolean;
+  precomputeLens?: string;                // e.g. "builder" | "debate"
+  precomputeLimitPerVariant?: number;
+  htmlOptions?: ExportHtmlOptions;
+
+  // Allow forward-compatible options without breaking builds
+  [key: string]: any;
   pack: SocialThreadPack;
   fileBaseName?: string;
   htmlOptions?: ExportHtmlOptions;
@@ -1160,5 +1168,6 @@ function escapeHtml(s: string) {
 function escapeAttr(s: string) {
   return escapeHtml(s).replace(/[\x60]/g, "&#96;");
 }
+
 
 
