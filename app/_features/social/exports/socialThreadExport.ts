@@ -669,7 +669,7 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
     const vp = (pack.variants && pack.variants[variant]) ? pack.variants[variant] :
                (pack[variant] ? pack[variant] : pack);
     const msgs = (vp && (vp.messages || vp.thread || vp.chat || vp.items)) ? (vp.messages || vp.thread || vp.chat || vp.items) : [];
-    const concepts = getConcepts(pack);
+    const concepts = (pack && (pack.concepts || pack.vocab || pack.glossary)) || [];
 
     els.threadMeta.textContent = msgs.length ? (msgs.length + " messages") : "No messages found";
     els.conceptMeta.textContent = concepts.length ? (concepts.length + " items") : "No concepts";
@@ -866,3 +866,4 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
 
   downloadTextFile(filename, html);
 }
+

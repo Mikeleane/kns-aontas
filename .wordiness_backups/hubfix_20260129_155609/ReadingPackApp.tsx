@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { buildWordinessSeedFromText } from "../wordiness/buildWordinessSeed";
@@ -10,7 +10,7 @@ import { buildInteractiveHtml } from "./exports/interactiveHtml";
 import { buildPrintablesHtml, buildTeacherKeyHtml, splitParas } from "./exports/printablesHtml";
 import { buildPrintablesPdfBytes } from "./exports/printablesPdf";
 import { buildPrintablesDocxBlob } from "./exports/printablesDocx";
-// ✅ Social thread export (copied from your bcomm-y3 work)
+// âœ… Social thread export (copied from your bcomm-y3 work)
 import { exportSocialThreadHtml } from "../social/exports/socialThreadExport";
 type Props = {
   pack?: ReadingPackData | null;
@@ -142,7 +142,7 @@ function btnStyle(kind: BtnKind, opts?: { busy?: boolean; disabled?: boolean }):
   return {
     ...base,
     background: "white",
-    color: BRAND.ink, // IMPORTANT: prevents “blank button text”
+    color: BRAND.ink, // IMPORTANT: prevents â€œblank button textâ€
   };
 }
 
@@ -220,7 +220,7 @@ export default function ReadingPackApp(props: Props) {
   const [jsonBox, setJsonBox] = useState<string>("");
   const [showJsonTools, setShowJsonTools] = useState(false);
 
-  // ✅ Social Thread (derived from reading pack text)
+  // âœ… Social Thread (derived from reading pack text)
   const [socialPack, setSocialPack] = useState<any | null>(null);
   const [socialErr, setSocialErr] = useState<string>("");
   const [tongueInCheek, setTongueInCheek] = useState<boolean>(false);
@@ -415,7 +415,7 @@ export default function ReadingPackApp(props: Props) {
     }
   }, [jsonBox, persistPack]);
 
-  // ✅ Generate Social Thread from the Reading Pack (derived)
+  // âœ… Generate Social Thread from the Reading Pack (derived)
   const generateSocialThread = useCallback(async () => {
     if (!pack) return;
 
@@ -463,7 +463,7 @@ export default function ReadingPackApp(props: Props) {
     }
   }, [pack, socialSource, tongueInCheek]);
 
-  // ✅ Export Social Thread HTML
+  // âœ… Export Social Thread HTML
   const exportSocialThread = useCallback(async () => {
     setSocialErr("");
     if (!socialPack) {
@@ -483,7 +483,7 @@ export default function ReadingPackApp(props: Props) {
           defaultSpeakEmojis: false,
           defaultShowEmojis: true,
           defaultPace: "step",
-          initialVisibleCount: 4,
+          initialVisibleCount: 1,
         },
       });
     } catch (e: any) {
@@ -506,7 +506,7 @@ export default function ReadingPackApp(props: Props) {
   const packSummary = useMemo(() => {
     if (!pack) return "No pack loaded yet.";
     const exCount = pack.exercises?.length ?? 0;
-    return `${pack.title || "Untitled"} • Class ${pack.schoolClass ?? "?"} • Stage ${pack.stage ?? "?"} • ${exCount} exercises`;
+    return `${pack.title || "Untitled"} â€¢ Class ${pack.schoolClass ?? "?"} â€¢ Stage ${pack.stage ?? "?"} â€¢ ${exCount} exercises`;
   }, [pack]);
 
   const socialSummary = useMemo(() => {
@@ -516,7 +516,7 @@ export default function ReadingPackApp(props: Props) {
     const stdChecks = socialPack?.standard?.checks?.length ?? 0;
     const supChecks = socialPack?.supported?.checks?.length ?? 0;
     const t = String(socialPack?.title || "Social Thread");
-    return `${t} • Std: ${stdMsgs} msgs / ${stdChecks} checks • Sup: ${supMsgs} msgs / ${supChecks} checks`;
+    return `${t} â€¢ Std: ${stdMsgs} msgs / ${stdChecks} checks â€¢ Sup: ${supMsgs} msgs / ${supChecks} checks`;
   }, [socialPack]);
   // Wordiness: keep a seeded word pool in localStorage for the Wordiness Hub (/wordiness)
   useEffect(() => {
@@ -608,7 +608,7 @@ export default function ReadingPackApp(props: Props) {
               style={btnStyle("primary", { busy: busy === "interactive", disabled: disabledAll })}
               type="button"
             >
-              {busy === "interactive" ? "Generating…" : "Generate Interactive HTML"}
+              {busy === "interactive" ? "Generatingâ€¦" : "Generate Interactive HTML"}
             </button>
             <div style={{ fontSize: 12, color: BRAND.muted2, lineHeight: 1.3 }}>
               Screen-first file with reading tools (Bionic, one-at-a-time, night mode).
@@ -616,7 +616,7 @@ export default function ReadingPackApp(props: Props) {
           </div>
         </div>
 
-        {/* ✅ Social Thread (derived from the reading pack) */}
+        {/* âœ… Social Thread (derived from the reading pack) */}
         <div style={cardStyle}>
           <div style={sectionTitle}>Social Thread (derived)</div>
 
@@ -662,7 +662,7 @@ export default function ReadingPackApp(props: Props) {
               style={btnStyle("primary", { busy: busy === "social_generate", disabled: !pack || !!busy })}
               type="button"
             >
-              {busy === "social_generate" ? "Generating…" : "Generate Social Thread"}
+              {busy === "social_generate" ? "Generatingâ€¦" : "Generate Social Thread"}
             </button>
 
             <button
@@ -671,7 +671,7 @@ export default function ReadingPackApp(props: Props) {
               style={btnStyle("secondary", { busy: busy === "social_export", disabled: !socialPack || !!busy })}
               type="button"
             >
-              {busy === "social_export" ? "Exporting…" : "Export Social HTML"}
+              {busy === "social_export" ? "Exportingâ€¦" : "Export Social HTML"}
             </button>
 
             <button
@@ -728,7 +728,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("secondary", { busy: busy === "printA_html", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "printA_html" ? "Opening…" : "Open: Student A"}
+                  {busy === "printA_html" ? "Openingâ€¦" : "Open: Student A"}
                 </button>
                 <button
                   onClick={openPrintablesStudentB}
@@ -736,7 +736,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("secondary", { busy: busy === "printB_html", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "printB_html" ? "Opening…" : "Open: Student B"}
+                  {busy === "printB_html" ? "Openingâ€¦" : "Open: Student B"}
                 </button>
                 <button
                   onClick={openTeacherKey}
@@ -744,7 +744,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("secondary", { busy: busy === "teacher_html", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "teacher_html" ? "Opening…" : "Open: Teacher Key"}
+                  {busy === "teacher_html" ? "Openingâ€¦" : "Open: Teacher Key"}
                 </button>
               </div>
             </div>
@@ -759,7 +759,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("primary", { busy: busy === "pdf_A", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "pdf_A" ? "Building PDF…" : "Student A (PDF)"}
+                  {busy === "pdf_A" ? "Building PDFâ€¦" : "Student A (PDF)"}
                 </button>
                 <button
                   onClick={() => downloadPdf("B")}
@@ -767,7 +767,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("primary", { busy: busy === "pdf_B", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "pdf_B" ? "Building PDF…" : "Student B (PDF)"}
+                  {busy === "pdf_B" ? "Building PDFâ€¦" : "Student B (PDF)"}
                 </button>
                 <button
                   onClick={() => downloadPdf("T")}
@@ -775,7 +775,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("secondary", { busy: busy === "pdf_T", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "pdf_T" ? "Building PDF…" : "Teacher Key (PDF)"}
+                  {busy === "pdf_T" ? "Building PDFâ€¦" : "Teacher Key (PDF)"}
                 </button>
               </div>
             </div>
@@ -790,7 +790,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("primary", { busy: busy === "docx_A", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "docx_A" ? "Building DOCX…" : "Student A (DOCX)"}
+                  {busy === "docx_A" ? "Building DOCXâ€¦" : "Student A (DOCX)"}
                 </button>
                 <button
                   onClick={() => downloadDocx("B")}
@@ -798,7 +798,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("primary", { busy: busy === "docx_B", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "docx_B" ? "Building DOCX…" : "Student B (DOCX)"}
+                  {busy === "docx_B" ? "Building DOCXâ€¦" : "Student B (DOCX)"}
                 </button>
                 <button
                   onClick={() => downloadDocx("T")}
@@ -806,7 +806,7 @@ export default function ReadingPackApp(props: Props) {
                   style={btnStyle("secondary", { busy: busy === "docx_T", disabled: disabledAll })}
                   type="button"
                 >
-                  {busy === "docx_T" ? "Building DOCX…" : "Teacher Key (DOCX)"}
+                  {busy === "docx_T" ? "Building DOCXâ€¦" : "Teacher Key (DOCX)"}
                 </button>
               </div>
 
@@ -870,7 +870,7 @@ export default function ReadingPackApp(props: Props) {
                       {p}
                     </p>
                   ))}
-                {splitParas(pack.reading?.[mode] || "").length > 4 && <div style={{ color: BRAND.muted2, fontSize: 12 }}>… (preview truncated)</div>}
+                {splitParas(pack.reading?.[mode] || "").length > 4 && <div style={{ color: BRAND.muted2, fontSize: 12 }}>â€¦ (preview truncated)</div>}
               </div>
 
               <div style={{ border: `1px solid ${BRAND.line}`, borderRadius: 18, padding: 12, background: "white" }}>
@@ -883,7 +883,7 @@ export default function ReadingPackApp(props: Props) {
                     </li>
                   ))}
                 </ol>
-                {(pack.exercises || []).length > 6 && <div style={{ color: BRAND.muted2, fontSize: 12 }}>… (preview truncated)</div>}
+                {(pack.exercises || []).length > 6 && <div style={{ color: BRAND.muted2, fontSize: 12 }}>â€¦ (preview truncated)</div>}
               </div>
             </div>
           </div>
@@ -892,3 +892,4 @@ export default function ReadingPackApp(props: Props) {
     </div>
   );
 }
+
