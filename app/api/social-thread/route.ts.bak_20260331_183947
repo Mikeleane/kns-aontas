@@ -1,4 +1,4 @@
-﻿// app/api/social-thread/route.ts
+// app/api/social-thread/route.ts
 import { NextResponse } from "next/server";
 
 const API_KEY = process.env.OPENAI_API_KEY;
@@ -7,20 +7,20 @@ const API_KEY = process.env.OPENAI_API_KEY;
 const MESSAGE_COUNT = 10; // exactly 10 messages per variant
 const MIN_CONCEPTS = 8;   // at least 8 vocab pills
 
-// Fun roster (kept emoji OUT of the speaker name â€” we store it in message.emoji)
+// Fun roster (kept emoji OUT of the speaker name — we store it in message.emoji)
 const FUN_ROSTER: Array<{ name: string; emoji: string }> = [
-  { name: "Biddy Oâ€™Sullivan", emoji: "ðŸ§º" },
-  { name: "Timmy Oâ€™Shea", emoji: "ðŸ—£ï¸" },
-  { name: "Aoife NÃ­ ShÃºilleabhÃ¡in", emoji: "ðŸ§¶" },
-  { name: "Cian Oâ€™Connor", emoji: "ðŸ¦Š" },
-  { name: "Niamh Fitzgerald", emoji: "ðŸŒˆ" },
-  { name: "OisÃ­n Murphy", emoji: "ðŸ§­" },
-  { name: "RÃ³isÃ­n Walsh", emoji: "ðŸŽ¨" },
-  { name: "Darragh Keane", emoji: "âš½" },
-  { name: "Saoirse Flynn", emoji: "ðŸ“š" },
-  { name: "Tadhg Oâ€™Brien", emoji: "ðŸŽ»" },
-  { name: "Eabha Ryan", emoji: "âœ¨" },
-  { name: "Fionn Byrne", emoji: "ðŸ› ï¸" },
+  { name: "Biddy O’Sullivan", emoji: "🧺" },
+  { name: "Timmy O’Shea", emoji: "🗣️" },
+  { name: "Aoife Ní Shúilleabháin", emoji: "🧶" },
+  { name: "Cian O’Connor", emoji: "🦊" },
+  { name: "Niamh Fitzgerald", emoji: "🌈" },
+  { name: "Oisín Murphy", emoji: "🧭" },
+  { name: "Róisín Walsh", emoji: "🎨" },
+  { name: "Darragh Keane", emoji: "⚽" },
+  { name: "Saoirse Flynn", emoji: "📚" },
+  { name: "Tadhg O’Brien", emoji: "🎻" },
+  { name: "Eabha Ryan", emoji: "✨" },
+  { name: "Fionn Byrne", emoji: "🛠️" },
 ];
 
 function jsonError(message: string, status = 500, extra?: any) {
@@ -97,7 +97,7 @@ function pickChatStarter(inputText: string, variant: "standard" | "supported") {
 
   // Standard (slightly richer language)
   if (aboutFeelings) {
-    return "Class chat-starter: Whatâ€™s one kind, practical thing you could say or do to support someone who feels low, and why would it help?";
+    return "Class chat-starter: What’s one kind, practical thing you could say or do to support someone who feels low, and why would it help?";
   }
   if (aboutConflict) {
     return "Class chat-starter: When someone is being unkind, what is a safe and respectful response (for you, for a friend, or for the class)? Explain your reasoning.";
@@ -120,7 +120,7 @@ function applyRoster(pack: any) {
     if (parts.length >= 2) {
       const first = parts[0];
       const rest = parts.slice(1).join(" ");
-      // Treat a short, non-alphanumeric token as an emoji marker (e.g., "ðŸ¦Š Aoife")
+      // Treat a short, non-alphanumeric token as an emoji marker (e.g., "🦊 Aoife")
       if (first.length <= 4 && /^[^A-Za-z0-9]+$/.test(first)) {
         return { emoji: first, name: rest };
       }
@@ -355,7 +355,7 @@ export async function POST(req: Request) {
   ].join("\n");
 
   const payload = {
-    model: (process.env.OPENAI_MODEL || "gpt-4.1-mini"),
+    model: "gpt-4.1-mini",
     temperature: 0.7,
     response_format: {
       type: "json_schema",
@@ -416,4 +416,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ pack }, { status: 200 });
 }
-
