@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /**
  * Full Social Thread HTML Export (offline-friendly)
@@ -80,7 +80,7 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
 
   const packJson = JSON.stringify(pack).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
 
-  const html = `<!doctype html>
+  const html = String.raw`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -391,14 +391,13 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
     return r.height || 96;
   }
 
-  function scrollToActive(){
+    function scrollToActive(){
     const el = document.querySelector(".msg.active");
     if (!el) return;
-    el.scrollIntoView({ behavior:"smooth", block:"center" });
-    setTimeout(() => {
-      const dh = getDockH();
-      window.scrollBy({ top: -Math.min(160, dh*0.6), behavior:"smooth" });
-    }, 250);
+    const dh = getDockH();
+    const top = el.getBoundingClientRect().top + window.scrollY - (dh + 18);
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  }, 250);
   }
 
   function setActive(idx){
