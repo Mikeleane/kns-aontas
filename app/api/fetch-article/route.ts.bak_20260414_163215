@@ -1,4 +1,4 @@
-﻿// app/api/fetch-article/route.ts
+// app/api/fetch-article/route.ts
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -115,4 +115,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

@@ -417,4 +417,3 @@ export async function POST(req: Request) {
   return NextResponse.json({ pack }, { status: 200 });
 }
 
-
