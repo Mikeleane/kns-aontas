@@ -138,7 +138,7 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
   <header>
     <div>
       <h1>${esc(title)}</h1>
-      <div class="sub">Offline Social Thread export Ã¢â‚¬Â¢ step, highlight, karaoke, mystery words</div>
+      <div class="sub">Offline Social Thread export ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ step, highlight, karaoke, mystery words</div>
     </div>
     <div class="sub" id="status"></div>
   </header>
@@ -368,7 +368,7 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
     for (const it of chosenArr){
       out += esc(rawText.slice(cur, it.i));
       const real = rawText.substr(it.i, it.len);
-      const masked = "Ã¢â€“Â¯".repeat(Math.min(8, Math.max(4, real.length)));
+      const masked = "ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¯".repeat(Math.min(8, Math.max(4, real.length)));
       out += '<span class="mw" data-real="'+esc(real)+'">'+masked+'</span>';
       cur = it.i + it.len;
     }
@@ -514,7 +514,7 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
         const def = c.definition || c.def || c.meaning || c.explain || "";
         const div = document.createElement("div");
         div.className = "concept";
-        div.innerHTML = '<div class="term">'+esc(term)+'</div><div class="def">'+esc(def || "Ã¢â‚¬â€")+'</div>';
+        div.innerHTML = '<div class="term">'+esc(term)+'</div><div class="def">'+esc(def || "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â")+'</div>';
         els.concepts.appendChild(div);
       });
     } else {
