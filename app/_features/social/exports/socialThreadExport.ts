@@ -1,22 +1,20 @@
 "use client";
 
 /**
- * Full Social Thread HTML Export (offline-friendly)
- * - Standard + Supported mapping (supports "adapted" alias)
- * - Default: 1 comment visible
- * - Active message highlighted
- * - Next scrolls so active is clearly visible (dock-aware)
- * - Karaoke mode (best-effort: uses onboundary when supported)
- * - Mystery words (click to reveal)
+ * Social Thread HTML Export (offline)
+ * - Default: 1 message visible
+ * - Active message highlighted; Next scrolls dock-aware
+ * - Karaoke (best-effort) + Mystery words (click to reveal)
+ * - Vocab pills: tap to reveal definitions (modal)
+ * - Concepts panel list (tap to open)
+ * - Variants: standard + supported (adapted alias supported)
  */
 
 export type ExportHtmlOptions = {
-  defaultLens?: string;
-  defaultAutoVoices?: boolean;
-  defaultSpeakEmojis?: boolean;
-  defaultShowEmojis?: boolean;
   defaultPace?: "all" | "step" | string;
   initialVisibleCount?: number; // default 1
+  defaultShowEmojis?: boolean;
+  defaultSpeakEmojis?: boolean;
   defaultKaraoke?: boolean;
   defaultMysteryWordsPerMsg?: number;
 };
@@ -24,9 +22,6 @@ export type ExportHtmlOptions = {
 export type ExportOpts = {
   pack: any;
   filename?: string;
-  precomputeUnpacks?: boolean;
-  precomputeLens?: string;
-  precomputeLimitPerVariant?: number;
   htmlOptions?: ExportHtmlOptions;
   [key: string]: any;
 };
@@ -56,7 +51,9 @@ function esc(s: string) {
   return String(s ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
@@ -64,20 +61,16 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
   const title = String(pack?.title ?? pack?.topic ?? "Social Thread");
 
   const opt: ExportHtmlOptions = {
-    defaultLens: "builder",
-    defaultAutoVoices: true,
-    defaultSpeakEmojis: false,
-    defaultShowEmojis: true,
     defaultPace: "step",
     initialVisibleCount: 1,
+    defaultShowEmojis: true,
+    defaultSpeakEmojis: false,
     defaultKaraoke: false,
     defaultMysteryWordsPerMsg: 0,
     ...(opts?.htmlOptions ?? {}),
   };
 
-  const fileBase = safeFileBase(opts?.filename || title);
-  const filename = `${fileBase}.html`;
-
+  const filename = `${safeFileBase(opts?.filename || title)}.html`;
   const packJson = JSON.stringify(pack).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
 
   const html = String.raw`<!doctype html>
@@ -90,11 +83,13 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
   :root{
     --bg:#f5f7fb; --card:#fff; --ink:#0f172a; --muted:#475569; --line:#e2e8f0;
     --shadow: 0 12px 40px rgba(15,23,42,.10);
-    --dockH: 96px; --r:18px;
+    --dockH: 104px; --r:18px;
+    --accent:#2563eb;
+    --pillBg:#eef2ff;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink);}
-  .wrap{max-width:1200px;margin:18px auto calc(var(--dockH) + 28px);padding:0 16px;}
+  .wrap{max-width:1200px;margin:18px auto calc(var(--dockH) + 32px);padding:0 16px;}
   header{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;margin:8px 0 14px;}
   h1{margin:0;font-size:18px;}
   .sub{color:var(--muted);font-size:12px;}
@@ -107,14 +102,25 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
   .msg{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff;margin-bottom:10px;scroll-margin-bottom:calc(var(--dockH) + 18px);}
   .msg.active{border-color:rgba(37,99,235,.55);outline:3px solid rgba(37,99,235,.12);box-shadow:0 10px 28px rgba(37,99,235,.12);}
   .row{display:flex;gap:10px;align-items:flex-start}
-  .avatar{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;background:#eef2ff;color:#1e293b;flex:0 0 auto;}
+  .avatar{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;background:var(--pillBg);color:#1e293b;flex:0 0 auto;}
   .meta{display:flex;justify-content:space-between;gap:10px;align-items:center;}
   .name{font-weight:900;font-size:13px;}
   .idx{color:var(--muted);font-size:12px;}
   .text{margin-top:6px;line-height:1.45;font-size:15px;word-break:break-word;}
-  .btnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .btnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;}
   .btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;font-weight:900;font-size:12px;cursor:pointer;}
   .btn.primary{background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.25);}
+  .pill{
+    border:1px solid rgba(37,99,235,.25);
+    background: rgba(37,99,235,.08);
+    color:#1e293b;
+    border-radius:999px;
+    padding:6px 10px;
+    font-weight:900;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .pill:hover{ border-color: rgba(37,99,235,.45); }
   .dock{position:fixed;left:0;right:0;bottom:0;background:rgba(245,247,251,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 12px;z-index:9999;}
   .dockInner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;}
   .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
@@ -128,9 +134,18 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
   .w.on{background:rgba(124,58,237,.18)}
   .mw{padding:0 3px;border-radius:8px;background:rgba(37,99,235,.10);border:1px dashed rgba(37,99,235,.35);cursor:pointer;user-select:none}
   .mw.revealed{background:transparent;border:1px solid transparent;cursor:default}
-  .concept{border-top:1px solid var(--line);padding:12px 14px}
+  /* concepts */
+  .concept{border-top:1px solid var(--line);padding:12px 14px;cursor:pointer}
+  .concept:hover{background:#fbfcff}
   .term{font-weight:900;font-size:13px;margin-bottom:4px}
   .def{color:var(--muted);font-size:13px;line-height:1.4}
+  /* modal */
+  .modalBG{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:10000;padding:18px;}
+  .modal{max-width:760px;width:100%;background:#fff;border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);padding:14px 14px 12px;}
+  .modalHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .modalTitle{font-weight:900;font-size:14px;}
+  .modalBody{margin-top:10px;font-size:13px;line-height:1.4;color:#273046;}
+  .modalClose{border:1px solid var(--line);background:#fff;border-radius:12px;padding:7px 10px;cursor:pointer;font-size:12px;}
 </style>
 </head>
 <body>
@@ -138,7 +153,7 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
   <header>
     <div>
       <h1>${esc(title)}</h1>
-      <div class="sub">Offline Social Thread export ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ step, highlight, karaoke, mystery words</div>
+      <div class="sub">Offline Social Thread export • step, highlight, karaoke, mystery words • vocab pills → tap for definitions</div>
     </div>
     <div class="sub" id="status"></div>
   </header>
@@ -196,9 +211,28 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
   </div>
 </div>
 
+<div class="modalBG" id="modalBG" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modalHead">
+      <div class="modalTitle" id="modalTitle"></div>
+      <button class="modalClose" id="modalClose" type="button">Close</button>
+    </div>
+    <div class="modalBody" id="modalBody"></div>
+  </div>
+</div>
+
 <script id="__PACK__" type="application/json">${esc(packJson)}</script>
 <script>
 (function(){
+  function esc(s){
+    return String(s ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
+
   const pack = JSON.parse(document.getElementById("__PACK__").textContent || "{}");
   const opt = ${esc(JSON.stringify(opt))};
 
@@ -219,9 +253,27 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
     mysterySel: document.getElementById("mysterySel"),
     voiceSel: document.getElementById("voiceSel"),
     btnStop: document.getElementById("btnStop"),
+    modalBG: document.getElementById("modalBG"),
+    modalTitle: document.getElementById("modalTitle"),
+    modalBody: document.getElementById("modalBody"),
+    modalClose: document.getElementById("modalClose"),
   };
 
-  // ----- Variants mapping (standard/supported; allow adapted alias)
+  function openModal(title, bodyHtml){
+    els.modalTitle.textContent = title;
+    els.modalBody.innerHTML = bodyHtml;
+    els.modalBG.style.display = "flex";
+  }
+  function closeModal(){
+    els.modalBG.style.display = "none";
+    els.modalTitle.textContent = "";
+    els.modalBody.innerHTML = "";
+  }
+  els.modalClose.addEventListener("click", closeModal);
+  els.modalBG.addEventListener("click", (e) => { if (e.target === els.modalBG) closeModal(); });
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  // ----- Variants mapping (standard/supported; allow adapted alias supported)
   function hasObj(x){ return x && typeof x === "object"; }
   function buildVariants(){
     const arr = [];
@@ -246,8 +298,21 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
   let visibleCount = Math.max(1, Number(opt.initialVisibleCount || 1));
   let activeIdx = 0;
 
-  // concepts (inline; no missing helper)
+  // concepts map
   const concepts = (pack && (pack.concepts || pack.vocab || pack.glossary)) || [];
+  const byKey = new Map();
+  (Array.isArray(concepts) ? concepts : []).forEach(c => {
+    const term = String(c.term ?? c.word ?? c.title ?? c.name ?? "").trim();
+    if (!term) return;
+    const id = String(c.id ?? term).trim();
+    byKey.set(id.toLowerCase(), c);
+    byKey.set(term.toLowerCase(), c);
+  });
+
+  function conceptFor(t){
+    if (!t) return null;
+    return byKey.get(String(t).toLowerCase()) || null;
+  }
 
   // speech
   let voices = [];
@@ -368,7 +433,7 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
     for (const it of chosenArr){
       out += esc(rawText.slice(cur, it.i));
       const real = rawText.substr(it.i, it.len);
-      const masked = "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¯".repeat(Math.min(8, Math.max(4, real.length)));
+      const masked = "▯".repeat(Math.min(8, Math.max(4, real.length)));
       out += '<span class="mw" data-real="'+esc(real)+'">'+masked+'</span>';
       cur = it.i + it.len;
     }
@@ -388,16 +453,15 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
 
   function getDockH(){
     const r = els.dock.getBoundingClientRect();
-    return r.height || 96;
+    return r.height || 104;
   }
 
-    function scrollToActive(){
+  function scrollToActive(){
     const el = document.querySelector(".msg.active");
     if (!el) return;
     const dh = getDockH();
     const top = el.getBoundingClientRect().top + window.scrollY - (dh + 18);
     window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-  
   }
 
   function setActive(idx){
@@ -405,6 +469,23 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
     document.querySelectorAll(".msg").forEach(m => m.classList.remove("active"));
     const el = document.querySelector('.msg[data-idx="'+idx+'"]');
     if (el) el.classList.add("active");
+  }
+
+  function messageTags(m){
+    const t = m.tags || m.concepts || m.keywords || [];
+    return Array.isArray(t) ? t.map(String) : [];
+  }
+
+  function autoDetectTags(text){
+    const found = [];
+    const lc = String(text || "").toLowerCase();
+    for (const c of (Array.isArray(concepts)?concepts:[])) {
+      const term = String(c.term ?? c.word ?? c.title ?? c.name ?? "").trim();
+      if (!term) continue;
+      if (lc.includes(term.toLowerCase())) found.push(term);
+      if (found.length >= 3) break;
+    }
+    return found;
   }
 
   function render(){
@@ -478,11 +559,35 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
       bUnpack.addEventListener("click", (e) => {
         e.stopPropagation();
         const extra = m.unpack || m.explain || m.notes || null;
-        alert(extra ? (typeof extra === "string" ? extra : JSON.stringify(extra,null,2)) : "No unpack data for this message.");
+        openModal("Unpack", extra ? ("<pre style='white-space:pre-wrap;margin:0'>" + esc(typeof extra==="string"?extra:JSON.stringify(extra,null,2)) + "</pre>") : "<div class='sub'>No unpack data for this message.</div>");
       });
 
       btnRow.appendChild(bSpeak);
       btnRow.appendChild(bUnpack);
+
+      // vocab pills
+      let tags = messageTags(m);
+      if (!tags.length) tags = autoDetectTags(display);
+      const pills = tags
+        .map(t => ({ t, c: conceptFor(t) }))
+        .filter(x => !!x.c)
+        .slice(0, 4);
+
+      pills.forEach((p) => {
+        const c = p.c;
+        const term = String(c.term ?? c.word ?? c.title ?? c.name ?? p.t);
+        const def = String(c.definition ?? c.def ?? c.meaning ?? "");
+        const ex = String(c.example ?? "");
+        const pill = document.createElement("button");
+        pill.className = "pill";
+        pill.type = "button";
+        pill.textContent = term;
+        pill.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openModal(term, "<div><b>Definition:</b> " + esc(def || "—") + "</div>" + (ex ? ("<div style='margin-top:8px'><b>Example:</b> " + esc(ex) + "</div>") : ""));
+        });
+        btnRow.appendChild(pill);
+      });
 
       right.appendChild(meta);
       right.appendChild(txt);
@@ -502,19 +607,23 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
 
     const newActive = Math.max(0, Math.min(visibleCount-1, vis.length-1));
     setActive(newActive);
-    setTimeout(scrollToActive, 120);
+    setTimeout(scrollToActive, 80);
 
-    // concepts
+    // concepts panel
     els.concepts.innerHTML = "";
     const arr = Array.isArray(concepts) ? concepts : [];
     els.conceptMeta.textContent = arr.length ? (arr.length + " items") : "No concepts";
     if (arr.length){
       arr.slice(0, 80).forEach(c => {
-        const term = c.term || c.word || c.title || c.name || "Concept";
-        const def = c.definition || c.def || c.meaning || c.explain || "";
+        const term = String(c.term ?? c.word ?? c.title ?? c.name ?? "Concept");
+        const def = String(c.definition ?? c.def ?? c.meaning ?? c.explain ?? "");
+        const ex = String(c.example ?? "");
         const div = document.createElement("div");
         div.className = "concept";
-        div.innerHTML = '<div class="term">'+esc(term)+'</div><div class="def">'+esc(def || "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â")+'</div>';
+        div.innerHTML = '<div class="term">'+esc(term)+'</div><div class="def">'+esc(def || "—")+'</div>';
+        div.addEventListener("click", () => {
+          openModal(term, "<div><b>Definition:</b> " + esc(def || "—") + "</div>" + (ex ? ("<div style='margin-top:8px'><b>Example:</b> " + esc(ex) + "</div>") : ""));
+        });
         els.concepts.appendChild(div);
       });
     } else {
@@ -539,4 +648,3 @@ export async function exportSocialThreadHtml(opts: ExportOpts): Promise<void> {
 
   downloadHtml(filename, html);
 }
-
