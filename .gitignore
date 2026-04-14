@@ -48,3 +48,9 @@ app_backup/
 
 *.bak
 build.log
+# local backups / logs
+.wordiness_backups/
+**/*.bak
+**/*.bak_*
+build_out.log
+build_err.log
